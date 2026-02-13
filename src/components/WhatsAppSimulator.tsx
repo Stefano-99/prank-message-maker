@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
 import { ArrowLeft, Phone, MoreVertical, Smile, Paperclip, Camera, Mic, Send, CheckCheck } from "lucide-react";
+import ChatKeyboard from "./ChatKeyboard";
 
 interface Props {
   contactName: string;
@@ -116,6 +117,12 @@ export default function WhatsAppSimulator({
           )}
         </div>
       </div>
+
+      {/* Keyboard - only when "me" is typing */}
+      <ChatKeyboard
+        currentText={currentTypingText}
+        isActive={isTyping && typingSender === "me"}
+      />
     </div>
   );
 }

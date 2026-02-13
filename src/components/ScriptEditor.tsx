@@ -5,8 +5,8 @@ interface Props {
   onPlay: (script: string, speed: number) => void;
   onReset: () => void;
   isPlaying: boolean;
-  platform: "whatsapp" | "instagram";
-  onPlatformChange: (p: "whatsapp" | "instagram") => void;
+  platform: "whatsapp" | "instagram" | "imessage";
+  onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
   onContactNameChange: (name: string) => void;
 }
@@ -64,6 +64,16 @@ export default function ScriptEditor({
           }`}
         >
           Instagram
+        </button>
+        <button
+          onClick={() => onPlatformChange("imessage")}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+            platform === "imessage"
+              ? "bg-[#0a84ff] text-white shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          iMessage
         </button>
       </div>
 

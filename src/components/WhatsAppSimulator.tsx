@@ -52,8 +52,11 @@ export default function WhatsAppSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-[10px] py-2 space-y-[3px]"
-        style={{ backgroundColor: "#0b141a" }}
+        className="flex-1 overflow-y-auto px-[10px] py-2 space-y-[3px] relative"
+        style={{
+          backgroundColor: "#0b141a",
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M10 5a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM30 15a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM50 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM5 30l3-3 3 3-3 3zM45 28a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM20 45l2-3h4l-2 3zM55 50a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM15 55a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM40 42l2-2 2 2-2 2zM8 18h3v1H8zM48 55h2v1h-2zM25 25a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z'/%3E%3C/g%3E%3C/svg%3E")`,
+        }}
       >
         {messages.map((msg) => (
           <div

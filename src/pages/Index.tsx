@@ -2,10 +2,11 @@ import { useState, useCallback } from "react";
 import ScriptEditor from "@/components/ScriptEditor";
 import WhatsAppSimulator from "@/components/WhatsAppSimulator";
 import InstagramSimulator from "@/components/InstagramSimulator";
+import IMessageSimulator from "@/components/IMessageSimulator";
 import { useChatPlayback, parseScript } from "@/hooks/useChatPlayback";
 
 const Index = () => {
-  const [platform, setPlatform] = useState<"whatsapp" | "instagram">("whatsapp");
+  const [platform, setPlatform] = useState<"whatsapp" | "instagram" | "imessage">("whatsapp");
   const [contactName, setContactName] = useState("João");
   const playback = useChatPlayback();
 
@@ -24,7 +25,11 @@ const Index = () => {
     playback.reset();
   }, [playback]);
 
-  const SimulatorComponent = platform === "whatsapp" ? WhatsAppSimulator : InstagramSimulator;
+  const SimulatorComponent = platform === "whatsapp" 
+    ? WhatsAppSimulator 
+    : platform === "imessage" 
+      ? IMessageSimulator 
+      : InstagramSimulator;
 
   return (
     <div className="min-h-screen bg-background flex flex-col lg:flex-row items-center justify-center gap-8 p-6">

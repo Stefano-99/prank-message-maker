@@ -8,17 +8,18 @@ import { useChatPlayback, parseScript } from "@/hooks/useChatPlayback";
 const Index = () => {
   const [platform, setPlatform] = useState<"whatsapp" | "instagram" | "imessage">("whatsapp");
   const [contactName, setContactName] = useState("João");
+  const [images, setImages] = useState<Record<string, string>>({});
   const playback = useChatPlayback();
 
   const handlePlay = useCallback(
     (script: string, speed: number) => {
-      const parsed = parseScript(script);
+      const parsed = parseScript(script, images);
       if (parsed.contact !== "Contato") {
         setContactName(parsed.contact);
       }
       playback.play(parsed.messages, speed);
     },
-    [playback]
+    [playback, images]
   );
 
   const handleReset = useCallback(() => {
@@ -41,6 +42,8 @@ const Index = () => {
         onPlatformChange={setPlatform}
         contactName={contactName}
         onContactNameChange={setContactName}
+        images={images}
+        onImagesChange={setImages}
       />
 
       <div className="shrink-0">

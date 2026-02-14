@@ -116,12 +116,16 @@ export default function IMessageSimulator({
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
               <div
-                className={`max-w-[70%] px-[14px] py-[8px] text-[17px] leading-[22px] tracking-[-0.01em] ${
+                className={`max-w-[70%] ${msg.image ? "p-[3px]" : "px-[14px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] ${
                   isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
                 }`}
                 style={{ borderRadius }}
               >
-                {msg.text}
+                {msg.image ? (
+                  <img src={msg.image} alt="" className="rounded-[15px] max-w-full w-[220px] object-cover" />
+                ) : (
+                  msg.text
+                )}
               </div>
             </div>
           );

@@ -67,15 +67,21 @@ export default function InstagramSimulator({
             key={msg.id}
             className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} animate-message-in`}
           >
-            <div
-              className={`max-w-[70%] px-3 py-2 rounded-[20px] text-[14px] leading-[18px] ${
-                msg.sender === "me"
-                  ? "bg-ig-bubble-out text-primary-foreground"
-                  : "bg-ig-bubble-in text-foreground"
-              }`}
-            >
-              {msg.text}
-            </div>
+            {msg.image ? (
+              <div className="max-w-[70%] rounded-[20px] overflow-hidden">
+                <img src={msg.image} alt="" className="max-w-full w-[200px] object-cover" />
+              </div>
+            ) : (
+              <div
+                className={`max-w-[70%] px-3 py-2 rounded-[20px] text-[14px] leading-[18px] ${
+                  msg.sender === "me"
+                    ? "bg-ig-bubble-out text-primary-foreground"
+                    : "bg-ig-bubble-in text-foreground"
+                }`}
+              >
+                {msg.text}
+              </div>
+            )}
           </div>
         ))}
 

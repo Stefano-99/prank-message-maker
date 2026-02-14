@@ -65,17 +65,29 @@ export default function WhatsAppSimulator({
             className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} animate-message-in`}
           >
             <div
-              className={`max-w-[80%] px-[9px] pt-[6px] pb-[8px] text-[14.2px] leading-[19px] relative ${
+              className={`max-w-[80%] ${msg.image ? "p-[3px]" : "px-[9px] pt-[6px] pb-[8px]"} text-[14.2px] leading-[19px] relative ${
                 msg.sender === "me"
                   ? "bg-[#005c4b] text-[#e9edef] rounded-[7.5px] rounded-tr-none"
                   : "bg-[#202c33] text-[#e9edef] rounded-[7.5px] rounded-tl-none"
               }`}
             >
-              <span>{msg.text}</span>
-              <span className="inline-flex items-center gap-[3px] ml-[8px] float-right translate-y-[4px]">
-                <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
-                {msg.sender === "me" && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
-              </span>
+              {msg.image ? (
+                <div>
+                  <img src={msg.image} alt="" className="rounded-[5px] max-w-full w-[220px] object-cover" />
+                  <span className="flex items-center justify-end gap-[3px] px-[6px] py-[3px]">
+                    <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
+                    {msg.sender === "me" && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <span>{msg.text}</span>
+                  <span className="inline-flex items-center gap-[3px] ml-[8px] float-right translate-y-[4px]">
+                    <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
+                    {msg.sender === "me" && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         ))}

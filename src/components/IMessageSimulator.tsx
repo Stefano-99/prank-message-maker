@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
-import { ArrowLeft, Video, ChevronRight } from "lucide-react";
 import ChatKeyboard from "./ChatKeyboard";
 
 interface Props {
@@ -30,9 +29,9 @@ export default function IMessageSimulator({
   }, [messages, isTyping, currentTypingText]);
 
   return (
-    <div className="w-[375px] h-[812px] mx-auto overflow-hidden bg-[#000000] flex flex-col shrink-0">
+    <div className="w-[375px] h-[812px] mx-auto overflow-hidden bg-black flex flex-col shrink-0" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif' }}>
       {/* iOS Status bar */}
-      <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white bg-[#000000]">
+      <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white bg-black">
         <span>{formatTime()}</span>
         <div className="flex items-center gap-[5px]">
           <div className="flex gap-[3px] items-end">
@@ -49,9 +48,11 @@ export default function IMessageSimulator({
       </div>
 
       {/* iMessage header */}
-      <div className="flex items-center px-2 py-[6px] bg-[#000000] border-b border-[#2c2c2e]">
+      <div className="flex items-center px-2 py-[6px] bg-black border-b border-[#2c2c2e]">
         <div className="flex items-center gap-[2px] text-[#0a84ff]">
-          <ArrowLeft className="w-[22px] h-[22px]" />
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+            <path d="M10 2L2 10L10 18" stroke="#0a84ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           <span className="text-[17px]">3</span>
         </div>
         <div className="flex-1 flex flex-col items-center">
@@ -59,42 +60,66 @@ export default function IMessageSimulator({
             {contactName[0]?.toUpperCase()}
           </div>
           <p className="text-[11px] font-semibold text-white">{contactName}</p>
-          {isTyping && typingSender === "them" && (
-            <p className="text-[10px] text-[#8e8e93]">digitando...</p>
-          )}
         </div>
         <div className="text-[#0a84ff]">
-          <Video className="w-[24px] h-[24px]" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15.5 5H18.5C19.33 5 20 5.67 20 6.5V10.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round"/>
+            <path d="M20 10.5L16 8V17L20 14.5V17.5C20 18.33 19.33 19 18.5 19H5.5C4.67 19 4 18.33 4 17.5V6.5C4 5.67 4.67 5 5.5 5H12" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
       </div>
 
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-[10px] py-3 space-y-[4px]"
+        className="flex-1 overflow-y-auto px-[16px] py-3"
         style={{ backgroundColor: "#000000" }}
       >
-        {/* Date label */}
-        <div className="flex justify-center mb-2">
-          <span className="text-[11px] text-[#8e8e93] font-medium">Hoje</span>
-        </div>
-
         {messages.map((msg, idx) => {
-          // Group: show tail only on last message of same sender
+          const prevMsg = messages[idx - 1];
           const nextMsg = messages[idx + 1];
           const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
+          const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
+          const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
+
+          // Spacing: tight between same sender, wider between different
+          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[8px]";
+
+          // Bubble radius logic matching iOS
+          const isMe = msg.sender === "me";
+          let borderRadius: string;
+          if (isMe) {
+            if (isFirstInGroup && isLastInGroup) {
+              borderRadius = "18px 18px 4px 18px";
+            } else if (isFirstInGroup) {
+              borderRadius = "18px 18px 4px 18px";
+            } else if (isLastInGroup) {
+              borderRadius = "18px 4px 4px 18px";
+            } else {
+              borderRadius = "18px 4px 4px 18px";
+            }
+          } else {
+            if (isFirstInGroup && isLastInGroup) {
+              borderRadius = "18px 18px 18px 4px";
+            } else if (isFirstInGroup) {
+              borderRadius = "18px 18px 18px 4px";
+            } else if (isLastInGroup) {
+              borderRadius = "4px 18px 18px 4px";
+            } else {
+              borderRadius = "4px 18px 18px 4px";
+            }
+          }
 
           return (
             <div
               key={msg.id}
-              className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} animate-message-in`}
+              className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
               <div
-                className={`max-w-[75%] px-[12px] py-[7px] text-[16px] leading-[21px] ${
-                  msg.sender === "me"
-                    ? `bg-[#0a84ff] text-white ${isLastInGroup ? "rounded-[18px] rounded-br-[4px]" : "rounded-[18px]"}`
-                    : `bg-[#1c1c1e] text-white ${isLastInGroup ? "rounded-[18px] rounded-bl-[4px]" : "rounded-[18px]"}`
+                className={`max-w-[70%] px-[14px] py-[8px] text-[17px] leading-[22px] tracking-[-0.01em] ${
+                  isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
                 }`}
+                style={{ borderRadius }}
               >
                 {msg.text}
               </div>
@@ -102,17 +127,19 @@ export default function IMessageSimulator({
           );
         })}
 
-        {/* Delivered label */}
+        {/* Read timestamp */}
         {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && (
-          <div className="flex justify-end pr-1">
-            <span className="text-[11px] text-[#8e8e93] font-medium">Entregue</span>
+          <div className="flex justify-end pr-[2px] mt-[2px]">
+            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
+              Read {formatTime()}
+            </span>
           </div>
         )}
 
         {/* Typing indicator for "them" */}
         {isTyping && typingSender === "them" && (
-          <div className="flex justify-start animate-message-in">
-            <div className="bg-[#1c1c1e] px-[14px] py-[10px] rounded-[18px] rounded-bl-[4px] flex items-center gap-[5px]">
+          <div className="flex justify-start mt-[8px] animate-message-in">
+            <div className="bg-[#26262a] px-[14px] py-[10px] rounded-[18px] rounded-bl-[4px] flex items-center gap-[5px]">
               <div className="w-[8px] h-[8px] rounded-full bg-[#8e8e93] typing-dot-1" />
               <div className="w-[8px] h-[8px] rounded-full bg-[#8e8e93] typing-dot-2" />
               <div className="w-[8px] h-[8px] rounded-full bg-[#8e8e93] typing-dot-3" />
@@ -122,29 +149,35 @@ export default function IMessageSimulator({
       </div>
 
       {/* Input area */}
-      <div className="flex items-end gap-[6px] px-[8px] py-[8px] bg-[#000000] border-t border-[#2c2c2e]">
-        <div className="w-[34px] h-[34px] flex items-center justify-center shrink-0">
-          <span className="text-[24px]">＋</span>
+      <div className="flex items-center gap-[8px] px-[10px] py-[8px] bg-black border-t border-[#2c2c2e]">
+        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0 rounded-full bg-[#3a3a3c]">
+          <span className="text-[20px] text-white leading-none font-light">+</span>
         </div>
-        <div className="flex-1 flex items-center border border-[#3a3a3c] rounded-full px-[14px] py-[8px] min-h-[36px]">
-          <div className="flex-1 text-[16px] text-white min-h-[20px]">
+        <div className="flex-1 flex items-center border border-[#3a3a3c] rounded-full px-[14px] py-[7px] min-h-[36px]">
+          <div className="flex-1 text-[17px] text-white min-h-[20px]">
             {isTyping && typingSender === "me" ? (
               <span>
                 {currentTypingText}
-                <span className="inline-block w-[2px] h-[16px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
+                <span className="inline-block w-[2px] h-[17px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
               </span>
             ) : (
               <span className="text-[#8e8e93]">iMessage</span>
             )}
           </div>
         </div>
-        <div className="w-[34px] h-[34px] flex items-center justify-center shrink-0">
+        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0">
           {isTyping && typingSender === "me" ? (
-            <div className="w-[30px] h-[30px] rounded-full bg-[#0a84ff] flex items-center justify-center">
-              <ChevronRight className="w-[18px] h-[18px] text-white" />
+            <div className="w-[30px] h-[30px] rounded-full bg-[#0b84fe] flex items-center justify-center">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1V13M7 1L12 6M7 1L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           ) : (
-            <span className="text-[#8e8e93] text-[20px]">🎙</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 18.5C15.59 18.5 18.5 15.59 18.5 12V10C18.5 6.41 15.59 3.5 12 3.5C8.41 3.5 5.5 6.41 5.5 10V12C5.5 15.59 8.41 18.5 12 18.5Z" stroke="#8e8e93" strokeWidth="1.5"/>
+              <path d="M12 18.5V21.5" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M8 21.5H16" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Play, RotateCcw, Zap } from "lucide-react";
+import { useState, useRef } from "react";
+import { Play, RotateCcw, Zap, ImagePlus, X } from "lucide-react";
 
 interface Props {
   onPlay: (script: string, speed: number) => void;
@@ -9,6 +9,8 @@ interface Props {
   onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
   onContactNameChange: (name: string) => void;
+  images: Record<string, string>;
+  onImagesChange: (images: Record<string, string>) => void;
 }
 
 const EXAMPLE_SCRIPT = `Nome: João
@@ -30,9 +32,33 @@ export default function ScriptEditor({
   onPlatformChange,
   contactName,
   onContactNameChange,
+  images,
+  onImagesChange,
 }: Props) {
   const [script, setScript] = useState(EXAMPLE_SCRIPT);
   const [speed, setSpeed] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageCounter = useRef(Object.keys(images).length + 1);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const newImages = { ...images };
+    Array.from(files).forEach((file) => {
+      const name = `foto${imageCounter.current++}`;
+      const url = URL.createObjectURL(file);
+      newImages[name] = url;
+    });
+    onImagesChange(newImages);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeImage = (name: string) => {
+    const newImages = { ...images };
+    URL.revokeObjectURL(newImages[name]);
+    delete newImages[name];
+    onImagesChange(newImages);
+  };
 
   return (
     <div className="w-full max-w-md space-y-4">
@@ -106,8 +132,50 @@ export default function ScriptEditor({
         <p className="text-[11px] text-muted-foreground mt-1">
           Use <code className="bg-muted-foreground/20 px-1 rounded">eu:</code> e{" "}
           <code className="bg-muted-foreground/20 px-1 rounded">ele:</code> ou{" "}
-          <code className="bg-muted-foreground/20 px-1 rounded">ela:</code> para cada mensagem
+          <code className="bg-muted-foreground/20 px-1 rounded">ela:</code> para cada mensagem.
+          Para enviar uma imagem: <code className="bg-muted-foreground/20 px-1 rounded">eu: foto1</code>
         </p>
+      </div>
+
+      {/* Image uploads */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+          Imagens
+        </label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-lg text-sm hover:text-foreground transition-colors mb-2"
+        >
+          <ImagePlus className="w-4 h-4" />
+          Adicionar imagem
+        </button>
+        {Object.keys(images).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(images).map(([name, url]) => (
+              <div key={name} className="relative group">
+                <img src={url} alt={name} className="w-16 h-16 object-cover rounded-lg border border-border/40" />
+                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5 rounded-b-lg">
+                  {name}
+                </span>
+                <button
+                  onClick={() => removeImage(name)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Speed control */}

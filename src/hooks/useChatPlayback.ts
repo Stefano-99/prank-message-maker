@@ -4,6 +4,7 @@ export interface ChatMessage {
   id: number;
   sender: "me" | "them";
   text: string;
+  image?: string; // URL da imagem
 }
 
 export interface ParsedScript {
@@ -11,7 +12,7 @@ export interface ParsedScript {
   messages: ChatMessage[];
 }
 
-export function parseScript(script: string): ParsedScript {
+export function parseScript(script: string, images?: Record<string, string>): ParsedScript {
   const lines = script.trim().split("\n").filter((l) => l.trim());
   if (lines.length === 0) return { contact: "Contato", messages: [] };
 
@@ -50,7 +51,13 @@ export function parseScript(script: string): ParsedScript {
     }
 
     if (text) {
-      messages.push({ id: id++, sender, text });
+      // Check if text is an image reference
+      const imageUrl = images?.[text.toLowerCase()];
+      if (imageUrl && sender === "me") {
+        messages.push({ id: id++, sender, text: "", image: imageUrl });
+      } else {
+        messages.push({ id: id++, sender, text });
+      }
     }
   }
 
@@ -88,27 +95,35 @@ export function useChatPlayback() {
       if (cancelRef.current) break;
 
       const msg = messages[i];
-      setTypingSender(msg.sender);
-      setIsTyping(true);
-      setCurrentTypingText("");
-      setTypingProgress(0);
+      
+      if (msg.image) {
+        // For image messages, just show a brief pause then send
+        await new Promise((r) => setTimeout(r, 400 / speed));
+        setVisibleMessages((prev) => [...prev, msg]);
+      } else {
+        setTypingSender(msg.sender);
+        setIsTyping(true);
+        setCurrentTypingText("");
+        setTypingProgress(0);
 
-      // Simulate typing character by character
-      for (let c = 0; c <= msg.text.length; c++) {
+        // Simulate typing character by character
+        for (let c = 0; c <= msg.text.length; c++) {
+          if (cancelRef.current) break;
+          setCurrentTypingText(msg.text.substring(0, c));
+          setTypingProgress(c / msg.text.length);
+          await new Promise((r) => setTimeout(r, charDelay));
+        }
+
         if (cancelRef.current) break;
-        setCurrentTypingText(msg.text.substring(0, c));
-        setTypingProgress(c / msg.text.length);
-        await new Promise((r) => setTimeout(r, charDelay));
+
+        // Small pause before sending
+        await new Promise((r) => setTimeout(r, 200 / speed));
+
+        setIsTyping(false);
+        setCurrentTypingText("");
+        setVisibleMessages((prev) => [...prev, msg]);
       }
 
-      if (cancelRef.current) break;
-
-      // Small pause before sending
-      await new Promise((r) => setTimeout(r, 200 / speed));
-
-      setIsTyping(false);
-      setCurrentTypingText("");
-      setVisibleMessages((prev) => [...prev, msg]);
 
       // Pause between messages
       if (i < messages.length - 1) {

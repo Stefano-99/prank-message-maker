@@ -61,12 +61,30 @@ export default function InstagramSimulator({
       </div>
 
       {/* Chat area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-[3px] bg-ig-bg">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 bg-ig-bg">
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
+          const nextMsg = messages[idx + 1];
           const isMe = msg.sender === "me";
           const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
-          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "" : "mt-[10px]";
+          const sameSenderAsNext = nextMsg && nextMsg.sender === msg.sender;
+          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[12px]";
+
+          // When grouped, flatten the side facing the adjacent bubble
+          let radiusClass = "rounded-full";
+          if (sameSenderAsPrev && sameSenderAsNext) {
+            radiusClass = isMe
+              ? "rounded-full rounded-tr-[6px] rounded-br-[6px]"
+              : "rounded-full rounded-tl-[6px] rounded-bl-[6px]";
+          } else if (sameSenderAsPrev) {
+            radiusClass = isMe
+              ? "rounded-full rounded-tr-[6px]"
+              : "rounded-full rounded-tl-[6px]";
+          } else if (sameSenderAsNext) {
+            radiusClass = isMe
+              ? "rounded-full rounded-br-[6px]"
+              : "rounded-full rounded-bl-[6px]";
+          }
 
           return (
             <div
@@ -79,7 +97,7 @@ export default function InstagramSimulator({
                 </div>
               ) : (
                 <div
-                  className={`max-w-[70%] px-4 py-2.5 rounded-full text-[15px] leading-[20px] ${
+                  className={`max-w-[70%] px-4 py-2.5 text-[15px] leading-[20px] ${radiusClass} ${
                     isMe
                       ? "bg-[#5b5bf6] text-white"
                       : "bg-[#262626] text-white"

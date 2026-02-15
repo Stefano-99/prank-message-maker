@@ -1,8 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
 import ChatKeyboard from "./ChatKeyboard";
-import tailBlueSvg from "@/assets/imessage-tail-blue.svg";
-import tailGraySvg from "@/assets/imessage-tail-gray.svg";
 
 interface Props {
   contactName: string;
@@ -88,17 +86,12 @@ export default function IMessageSimulator({
           // Gap: 2px within group, 10px between groups
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          // Border radius: 18px default, 4px on tail corner only for last in group
-          let borderRadius: string;
-          if (isMe) {
-            borderRadius = isLastInGroup
-              ? "18px 18px 4px 18px"
-              : "18px 18px 18px 18px";
-          } else {
-            borderRadius = isLastInGroup
-              ? "18px 18px 18px 4px"
-              : "18px 18px 18px 18px";
-          }
+          // Border radius: 24px default, 4px ONLY on tail corner of last in group
+          const borderRadius = isLastInGroup
+            ? isMe
+              ? "24px 24px 4px 24px"
+              : "24px 24px 24px 4px"
+            : "24px";
 
           const bubbleColor = isMe ? "#0A84FF" : "#3A3A3C";
 
@@ -126,38 +119,18 @@ export default function IMessageSimulator({
                   msg.text
                 )}
 
-                {/* Tail image asset - only on last message of group */}
+                {/* SVG tail - ONLY on last message of group */}
                 {isLastInGroup && isMe && (
-                  <img
-                    src={tailBlueSvg}
-                    alt=""
-                    draggable={false}
-                    style={{
-                      position: "absolute",
-                      bottom: -1,
-                      right: -8,
-                      width: 12,
-                      height: 17,
-                      display: "block",
-                      pointerEvents: "none",
-                    }}
-                  />
+                  <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
+                    style={{ position: "absolute", right: -8, bottom: 0, display: "block", pointerEvents: "none" }}>
+                    <path d="M 0,25 Q 15,20 20,0 L 0,0 Z" fill="#0A84FF" />
+                  </svg>
                 )}
                 {isLastInGroup && !isMe && (
-                  <img
-                    src={tailGraySvg}
-                    alt=""
-                    draggable={false}
-                    style={{
-                      position: "absolute",
-                      bottom: -1,
-                      left: -8,
-                      width: 12,
-                      height: 17,
-                      display: "block",
-                      pointerEvents: "none",
-                    }}
-                  />
+                  <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
+                    style={{ position: "absolute", left: -8, bottom: 0, display: "block", pointerEvents: "none" }}>
+                    <path d="M 20,25 Q 5,20 0,0 L 20,0 Z" fill="#3A3A3C" />
+                  </svg>
                 )}
               </div>
             </div>

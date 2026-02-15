@@ -1,30 +1,36 @@
 import { useRef, useState, useCallback } from "react";
-import html2canvas from "html2canvas";
+import domtoimage from "dom-to-image-more";
 
 export function useRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const intervalRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const targetRef = useRef<HTMLElement | null>(null);
+  const recordingRef = useRef(false);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
     targetRef.current = element;
     chunksRef.current = [];
+    recordingRef.current = true;
 
-    // Create offscreen canvas matching element size
     const rect = element.getBoundingClientRect();
-    const scale = 2; // 2x for high quality
+    const scale = 2;
     const canvas = document.createElement("canvas");
     canvas.width = rect.width * scale;
     canvas.height = rect.height * scale;
     canvasRef.current = canvas;
+    const ctx = canvas.getContext("2d")!;
+
+    // Fill initial frame with black
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const stream = canvas.captureStream(30);
     const mediaRecorder = new MediaRecorder(stream, {
       mimeType: "video/webm;codecs=vp9",
-      videoBitsPerSecond: 8_000_000, // 8 Mbps for high quality
+      videoBitsPerSecond: 10_000_000,
     });
 
     mediaRecorder.ondataavailable = (e) => {
@@ -46,35 +52,54 @@ export function useRecorder() {
     mediaRecorder.start(100);
     setIsRecording(true);
 
-    // Capture frames
-    const captureFrame = async () => {
-      if (!targetRef.current || !canvasRef.current) return;
-      try {
-        const captured = await html2canvas(targetRef.current, {
-          scale,
-          useCORS: true,
-          logging: false,
-          backgroundColor: null,
-        });
-        const ctx = canvasRef.current.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-          ctx.drawImage(captured, 0, 0, canvasRef.current.width, canvasRef.current.height);
+    // Use requestAnimationFrame for smooth frame capture
+    let lastFrameTime = 0;
+    const frameInterval = 1000 / 20; // 20fps is practical for dom-to-image
+
+    const captureLoop = async (timestamp: number) => {
+      if (!recordingRef.current) return;
+
+      if (timestamp - lastFrameTime >= frameInterval) {
+        lastFrameTime = timestamp;
+        try {
+          if (targetRef.current && canvasRef.current) {
+            const dataUrl = await domtoimage.toPng(targetRef.current, {
+              width: rect.width,
+              height: rect.height,
+              style: {
+                transform: "none",
+                "transform-origin": "top left",
+              },
+              quality: 1,
+            });
+            const img = new Image();
+            img.onload = () => {
+              if (canvasRef.current) {
+                const c = canvasRef.current.getContext("2d");
+                if (c) {
+                  c.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+                  c.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
+                }
+              }
+            };
+            img.src = dataUrl;
+          }
+        } catch {
+          // skip frame on error
         }
-      } catch {
-        // ignore frame errors
       }
+
+      rafRef.current = requestAnimationFrame(captureLoop);
     };
 
-    // Capture at ~15fps (html2canvas is heavy, 15 is practical)
-    await captureFrame();
-    intervalRef.current = window.setInterval(captureFrame, 66);
+    rafRef.current = requestAnimationFrame(captureLoop);
   }, []);
 
   const stopRecording = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    recordingRef.current = false;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();

@@ -86,11 +86,11 @@ export default function IMessageSimulator({
           // Gap: 2px within group, 10px between groups
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          // Border radius: 20px mandatory, 2px on tail corner for last in group
+          // Border radius: 20px, 0px on tail corner for last in group
           const borderRadius = isLastInGroup
             ? isMe
-              ? "20px 20px 2px 20px"
-              : "20px 20px 20px 2px"
+              ? "20px 20px 0px 20px"
+              : "20px 20px 20px 0px"
             : "20px";
 
           const bubbleColor = isMe ? "#0A84FF" : "#262626";
@@ -121,15 +121,15 @@ export default function IMessageSimulator({
 
                 {/* SVG tail - ONLY on last message of group */}
                 {isLastInGroup && isMe && (
-                  <svg width="11" height="20" viewBox="0 0 11 20" fill="none"
-                    style={{ position: "absolute", right: -6, bottom: -1, pointerEvents: "none" }}>
-                    <path d="M0.999965 0C0.999965 10 6 18 11 20H-1.90735e-06V0H0.999965Z" fill="#0A84FF" />
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                    style={{ position: "absolute", right: -20, bottom: 0, pointerEvents: "none" }}>
+                    <path d="M0 0 C 2 10, 10 18, 20 20 L 20 0 Z" fill="#0A84FF" />
                   </svg>
                 )}
                 {isLastInGroup && !isMe && (
-                  <svg width="11" height="20" viewBox="0 0 11 20" fill="none"
-                    style={{ position: "absolute", left: -6, bottom: -1, pointerEvents: "none", transform: "scaleX(-1)" }}>
-                    <path d="M0.999965 0C0.999965 10 6 18 11 20H-1.90735e-06V0H0.999965Z" fill="#262626" />
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
+                    style={{ position: "absolute", left: -20, bottom: 0, pointerEvents: "none", transform: "scaleX(-1)" }}>
+                    <path d="M0 0 C 2 10, 10 18, 20 20 L 20 0 Z" fill="#262626" />
                   </svg>
                 )}
               </div>

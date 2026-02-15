@@ -41,31 +41,6 @@ const themes = {
   },
 };
 
-function getSuggestions(text: string): [string, string, string] {
-  if (!text || text.length === 0) return ["I", "The", "It's"];
-  const lastWord = text.split(/\s+/).filter(Boolean).pop()?.toLowerCase() || "";
-  if (lastWord === "i") return ["I'm", "I'll", "I've"];
-  if (lastWord === "how") return ["are", "is", "do"];
-  if (lastWord === "what") return ["is", "are", "do"];
-  if (lastWord === "do") return ["you", "we", "it"];
-  if (lastWord === "are") return ["you", "we", "they"];
-  if (lastWord === "is") return ["it", "that", "this"];
-  if (lastWord === "you") return ["are", "want", "can"];
-  if (lastWord === "can") return ["you", "we", "I"];
-  if (lastWord === "the") return ["best", "most", "first"];
-  if (lastWord === "it") return ["is", "was", "will"];
-  if (lastWord === "that") return ["is", "was", "you"];
-  if (text.endsWith(" ")) return ["the", "and", "to"];
-  // Partial word: show completions
-  const partial = lastWord;
-  const words = ["the", "that", "this", "there", "they", "then", "think", "to", "too", "today", "tomorrow", "thanks", "good", "great", "going", "got", "get", "have", "has", "had", "hello", "hey", "how", "here", "just", "know", "like", "look", "love", "make", "need", "not", "now", "okay", "only", "really", "right", "sure", "want", "well", "will", "with", "would", "yes", "you"];
-  const matches = words.filter(w => w.startsWith(partial) && w !== partial);
-  if (matches.length >= 3) return [matches[0], matches[1], matches[2]];
-  if (matches.length === 2) return [matches[0], matches[1], partial];
-  if (matches.length === 1) return [matches[0], partial, "the"];
-  return [partial, "I", "the"];
-}
-
 export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp" }: Props) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const t = themes[theme];
@@ -90,18 +65,18 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
     return key.toLowerCase() === activeKey.toLowerCase();
   };
 
-  const suggestions = getSuggestions(currentText);
-
   return (
     <div className={`w-full ${t.bg} pt-0 pb-[2px] px-[3px]`}>
       {/* Suggestions bar (iOS only) */}
       {t.suggestions && (
         <div className="flex items-center h-[40px] border-b border-[#3a3a3c] px-[4px] gap-0">
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">{suggestions[0]}</div>
+          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Nu</div>
           <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white font-semibold">"{suggestions[1]}"</div>
+          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Și</div>
           <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">{suggestions[2]}</div>
+          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Rpd</div>
+          <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
+          <div className="w-[40px] flex items-center justify-center h-full text-[14px] text-[#8e8e93]">≡A</div>
         </div>
       )}
 

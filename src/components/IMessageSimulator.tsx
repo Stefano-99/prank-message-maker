@@ -72,8 +72,8 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-5"
-        style={{ backgroundColor: "#000000" }}
+        className="flex-1 py-3 px-[16px]"
+        style={{ backgroundColor: "#000000", overflowY: "auto" }}
       >
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
@@ -90,20 +90,20 @@ export default function IMessageSimulator({
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              <div className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"}`}>
+              <div className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"}`} style={{ marginRight: isMe && isLastInGroup ? 10 : 0, marginLeft: !isMe && isLastInGroup ? 10 : 0 }}>
                 {msg.image ? (
                   <img src={msg.image} alt="" style={{ borderRadius: "1rem", maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
                 )}
                 {isLastInGroup && isMe && (
-                  <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: "absolute", bottom: 0, right: -13, minWidth: 20, minHeight: 20, pointerEvents: "none" }}>
-                    <path d="M0 0 C 0 10, 8 18, 20 20 V 0 H 0 Z" fill={bubbleColor} />
+                  <svg width="10" height="16" viewBox="0 0 10 16" style={{ position: "absolute", bottom: 0, right: -10, pointerEvents: "none" }}>
+                    <path d="M0 0 C 0 8, 4 14, 10 16 V 0 H 0 Z" fill={bubbleColor} />
                   </svg>
                 )}
                 {isLastInGroup && !isMe && (
-                  <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: "absolute", bottom: 0, left: -13, minWidth: 20, minHeight: 20, pointerEvents: "none", transform: "scaleX(-1)" }}>
-                    <path d="M0 0 C 0 10, 8 18, 20 20 V 0 H 0 Z" fill={bubbleColor} />
+                  <svg width="10" height="16" viewBox="0 0 10 16" style={{ position: "absolute", bottom: 0, left: -10, pointerEvents: "none", transform: "scaleX(-1)" }}>
+                    <path d="M0 0 C 0 8, 4 14, 10 16 V 0 H 0 Z" fill={bubbleColor} />
                   </svg>
                 )}
               </div>

@@ -13,7 +13,7 @@ interface Props {
 
 function formatTime() {
   const now = new Date();
-  return now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }
 
 export default function IMessageSimulator({

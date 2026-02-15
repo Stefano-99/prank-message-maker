@@ -81,47 +81,36 @@ export default function IMessageSimulator({
           const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
           const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
           const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
-          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[8px]";
           const isMe = msg.sender === "me";
-          const showTail = isLastInGroup;
 
+          // Gap: 2px within group, 10px between groups
+          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
+
+          // Border radius: 24px default, 4px on tail corner only for last in group
           let borderRadius: string;
           if (isMe) {
-            borderRadius = showTail
+            borderRadius = isLastInGroup
               ? "24px 24px 4px 24px"
-              : isFirstInGroup
-                ? "24px 24px 4px 24px"
-                : "24px 4px 4px 24px";
+              : "24px 24px 24px 24px";
           } else {
-            borderRadius = showTail
+            borderRadius = isLastInGroup
               ? "24px 24px 24px 4px"
-              : isFirstInGroup
-                ? "24px 24px 24px 4px"
-                : "4px 24px 24px 4px";
+              : "24px 24px 24px 24px";
           }
 
-          const bubbleColor = isMe ? "#0A84FF" : "#262626";
+          const bubbleColor = isMe ? "#0A84FF" : "#3A3A3C";
 
           return (
             <div
               key={msg.id}
-              className={`flex items-end ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
+              className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              {/* Left tail (them) */}
-              {showTail && !isMe && (
-                <div style={{ width: 10, alignSelf: "flex-end", flexShrink: 0 }}>
-                  <svg width="10" height="20" viewBox="0 0 10 20" fill="none" style={{ display: "block" }}>
-                    <path d="M10,0 L10,17 C10,17 10,20 7,20 C9,19 10,17 10,17 L10,0 C10,0 9,10 5,14 C2,17 0,18 0,20 L0,20 C3,19 7,16 9,12 C10,9 10,4 10,0 Z" fill={bubbleColor} />
-                  </svg>
-                </div>
-              )}
-              {!showTail && !isMe && <div style={{ width: 10, flexShrink: 0 }} />}
-
               <div
                 style={{
+                  position: "relative",
                   borderRadius,
                   backgroundColor: bubbleColor,
-                  padding: msg.image ? "3px" : "8px 16px",
+                  padding: msg.image ? "3px" : "10px 16px",
                   color: "#FFFFFF",
                   fontSize: 17,
                   lineHeight: "22px",
@@ -134,17 +123,25 @@ export default function IMessageSimulator({
                 ) : (
                   msg.text
                 )}
-              </div>
 
-              {/* Right tail (me) */}
-              {showTail && isMe && (
-                <div style={{ width: 10, alignSelf: "flex-end", flexShrink: 0 }}>
-                  <svg width="10" height="20" viewBox="0 0 10 20" fill="none" style={{ display: "block" }}>
-                    <path d="M0,0 L0,17 C0,17 0,20 3,20 C1,19 0,17 0,17 L0,0 C0,0 1,10 5,14 C8,17 10,18 10,20 L10,20 C7,19 3,16 1,12 C0,9 0,4 0,0 Z" fill={bubbleColor} />
+                {/* Absolute SVG tail - only on last message of group */}
+                {isLastInGroup && isMe && (
+                  <svg
+                    width="12" height="16" viewBox="0 0 12 16" fill="none"
+                    style={{ position: "absolute", bottom: 0, right: -7, display: "block" }}
+                  >
+                    <path d="M0,0 C0,0 0,8 0,12 C0,14 1,16 4,16 C2,15.5 1,14 1,12 C1,10 2,7 5,4 C8,1.5 12,0.5 12,0.5 C12,0.5 8,1 5,3 C3,4.5 1,3 0,0 Z" fill={bubbleColor} />
                   </svg>
-                </div>
-              )}
-              {!showTail && isMe && <div style={{ width: 10, flexShrink: 0 }} />}
+                )}
+                {isLastInGroup && !isMe && (
+                  <svg
+                    width="12" height="16" viewBox="0 0 12 16" fill="none"
+                    style={{ position: "absolute", bottom: 0, left: -7, display: "block", transform: "scaleX(-1)" }}
+                  >
+                    <path d="M0,0 C0,0 0,8 0,12 C0,14 1,16 4,16 C2,15.5 1,14 1,12 C1,10 2,7 5,4 C8,1.5 12,0.5 12,0.5 C12,0.5 8,1 5,3 C3,4.5 1,3 0,0 Z" fill={bubbleColor} />
+                  </svg>
+                )}
+              </div>
             </div>
           );
         })}

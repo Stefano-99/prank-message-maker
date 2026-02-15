@@ -89,22 +89,14 @@ export default function IMessageSimulator({
           const isMe = msg.sender === "me";
           let borderRadius: string;
           if (isMe) {
-            if (isFirstInGroup && isLastInGroup) {
+            if (isLastInGroup) {
               borderRadius = "18px 18px 4px 18px";
-            } else if (isFirstInGroup) {
-              borderRadius = "18px 18px 4px 18px";
-            } else if (isLastInGroup) {
-              borderRadius = "18px 4px 4px 18px";
             } else {
               borderRadius = "18px 4px 4px 18px";
             }
           } else {
-            if (isFirstInGroup && isLastInGroup) {
+            if (isLastInGroup) {
               borderRadius = "18px 18px 18px 4px";
-            } else if (isFirstInGroup) {
-              borderRadius = "18px 18px 18px 4px";
-            } else if (isLastInGroup) {
-              borderRadius = "4px 18px 18px 4px";
             } else {
               borderRadius = "4px 18px 18px 4px";
             }
@@ -115,29 +107,16 @@ export default function IMessageSimulator({
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              <div className="relative max-w-[70%]">
-                <div
-                  className={`${msg.image ? "p-[3px]" : "px-[14px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] ${
-                    isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
-                  }`}
-                  style={{ borderRadius }}
-                >
-                  {msg.image ? (
-                    <img src={msg.image} alt="" className="rounded-[15px] max-w-full w-[220px] object-cover" />
-                  ) : (
-                    msg.text
-                  )}
-                </div>
-                {isLastInGroup && (
-                  isMe ? (
-                    <svg className="absolute bottom-0 -right-[6px]" width="10" height="16" viewBox="0 0 10 16" fill="none">
-                      <path d="M0 16C0 16 3 14 5.5 8C8 2 10 0 10 0V16H0Z" fill="#0b84fe"/>
-                    </svg>
-                  ) : (
-                    <svg className="absolute bottom-0 -left-[6px]" width="10" height="16" viewBox="0 0 10 16" fill="none">
-                      <path d="M10 16C10 16 7 14 4.5 8C2 2 0 0 0 0V16H10Z" fill="#26262a"/>
-                    </svg>
-                  )
+              <div
+                className={`max-w-[70%] ${msg.image ? "p-[3px]" : "px-[14px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] ${
+                  isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
+                }`}
+                style={{ borderRadius }}
+              >
+                {msg.image ? (
+                  <img src={msg.image} alt="" className="rounded-[15px] max-w-full w-[220px] object-cover" />
+                ) : (
+                  msg.text
                 )}
               </div>
             </div>

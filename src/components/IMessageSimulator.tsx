@@ -132,35 +132,45 @@ export default function IMessageSimulator({
         )}
       </div>
 
-      {/* Input bar */}
-      <div className="flex items-center gap-[8px] px-[10px] py-[8px] bg-black">
-        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0 rounded-full bg-[#3a3a3c]">
-          <span className="text-[20px] text-white leading-none font-light">+</span>
+      {/* iOS 17 input bar */}
+      <div className="flex items-center gap-[6px] px-[8px] py-[6px]" style={{ backgroundColor: "#1c1c1e" }}>
+        {/* Plus / Apps button */}
+        <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full" style={{ backgroundColor: "#636366" }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
         </div>
-        <div className="flex-1 flex items-center border border-[#3a3a3c] rounded-full px-[14px] py-[7px] min-h-[36px]">
-          <div className="flex-1 text-[17px] text-white min-h-[20px]">
+
+        {/* Text field */}
+        <div
+          className="flex-1 flex items-center rounded-full min-h-[34px] px-[12px]"
+          style={{ border: "1px solid #3a3a3c" }}
+        >
+          <div className="flex-1 text-[16px] text-white min-h-[20px]" style={{ fontWeight: 400 }}>
             {isTyping && typingSender === "me" ? (
               <span>
                 {currentTypingText}
-                <span className="inline-block w-[2px] h-[17px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
+                <span className="inline-block w-[1.5px] h-[16px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
               </span>
             ) : (
-              <span className="text-[#8e8e93]">iMessage</span>
+              <span style={{ color: "#8e8e93" }}>iMessage</span>
             )}
           </div>
         </div>
-        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0">
+
+        {/* Send / Voice memo button */}
+        <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0">
           {isTyping && typingSender === "me" ? (
-            <div className="w-[30px] h-[30px] rounded-full bg-[#0b84fe] flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1V13M7 1L12 6M7 1L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ backgroundColor: "#0b84fe" }}>
+              <svg width="13" height="15" viewBox="0 0 13 15" fill="none">
+                <path d="M6.5 13V2M6.5 2L1.5 7M6.5 2L11.5 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           ) : (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 18.5C15.59 18.5 18.5 15.59 18.5 12V10C18.5 6.41 15.59 3.5 12 3.5C8.41 3.5 5.5 6.41 5.5 10V12C5.5 15.59 8.41 18.5 12 18.5Z" stroke="#8e8e93" strokeWidth="1.5"/>
-              <path d="M12 18.5V21.5" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M8 21.5H16" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M12 19V22" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="9" y="3" width="6" height="12" rx="3" stroke="#8e8e93" strokeWidth="1.5"/>
             </svg>
           )}
         </div>

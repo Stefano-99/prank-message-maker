@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
-import ChatKeyboard from "./ChatKeyboard";
+import iosKeyboard from "@/assets/ios-keyboard.png";
 
 interface Props {
   contactName: string;
@@ -79,7 +79,7 @@ export default function IMessageSimulator({
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] py-3"
-        style={{ backgroundColor: "#000000" }}
+        style={{ backgroundColor: "#000000", paddingBottom: "220px" }}
       >
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
@@ -132,46 +132,10 @@ export default function IMessageSimulator({
         )}
       </div>
 
-      {/* Input area */}
-      <div className="flex items-center gap-[8px] px-[10px] py-[8px] bg-black">
-        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0 rounded-full bg-[#3a3a3c]">
-          <span className="text-[20px] text-white leading-none font-light">+</span>
-        </div>
-        <div className="flex-1 flex items-center border border-[#3a3a3c] rounded-full px-[14px] py-[7px] min-h-[36px]">
-          <div className="flex-1 text-[17px] text-white min-h-[20px]">
-            {isTyping && typingSender === "me" ? (
-              <span>
-                {currentTypingText}
-                <span className="inline-block w-[2px] h-[17px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
-              </span>
-            ) : (
-              <span className="text-[#8e8e93]">iMessage</span>
-            )}
-          </div>
-        </div>
-        <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0">
-          {isTyping && typingSender === "me" ? (
-            <div className="w-[30px] h-[30px] rounded-full bg-[#0b84fe] flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1V13M7 1L12 6M7 1L2 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 18.5C15.59 18.5 18.5 15.59 18.5 12V10C18.5 6.41 15.59 3.5 12 3.5C8.41 3.5 5.5 6.41 5.5 10V12C5.5 15.59 8.41 18.5 12 18.5Z" stroke="#8e8e93" strokeWidth="1.5"/>
-              <path d="M12 18.5V21.5" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M8 21.5H16" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          )}
-        </div>
+      {/* Static keyboard image */}
+      <div className="w-full" style={{ position: "relative", zIndex: 10 }}>
+        <img src={iosKeyboard} alt="" className="w-full block" />
       </div>
-
-      {/* Keyboard */}
-      <ChatKeyboard
-        currentText={currentTypingText}
-        isActive={isTyping && typingSender === "me"}
-        theme="ios"
-      />
     </div>
   );
 }

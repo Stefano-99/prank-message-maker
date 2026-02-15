@@ -79,21 +79,13 @@ export default function IMessageSimulator({
           const prevMsg = messages[idx - 1];
           const nextMsg = messages[idx + 1];
           const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
-          const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
           const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
           const isMe = msg.sender === "me";
-
-          // Gap: 2px within group, 10px between groups
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          // Border radius: 20px, 0px on tail corner for last in group
-          const borderRadius = isLastInGroup
-            ? isMe
-              ? "20px 20px 0px 20px"
-              : "20px 20px 20px 0px"
-            : "20px";
-
-          const bubbleColor = isMe ? "#0A84FF" : "#262626";
+          const tailClass = isLastInGroup
+            ? isMe ? "imsg-tail-me" : "imsg-tail-them"
+            : "imsg-no-tail";
 
           return (
             <div
@@ -101,36 +93,12 @@ export default function IMessageSimulator({
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
               <div
-                style={{
-                  position: "relative",
-                  borderRadius,
-                  backgroundColor: bubbleColor,
-                  padding: msg.image ? "3px" : "10px 16px",
-                  color: "#FFFFFF",
-                  fontSize: 17,
-                  lineHeight: "22px",
-                  letterSpacing: "-0.01em",
-                  maxWidth: "75%",
-                }}
+                className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"} ${tailClass}`}
               >
                 {msg.image ? (
-                  <img src={msg.image} alt="" style={{ borderRadius: 17, maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
+                  <img src={msg.image} alt="" style={{ borderRadius: "1rem", maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
-                )}
-
-                {/* SVG tail - ONLY on last message of group */}
-                {isLastInGroup && isMe && (
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
-                    style={{ position: "absolute", right: -20, bottom: 0, pointerEvents: "none" }}>
-                    <path d="M0 0 C 2 10, 10 18, 20 20 L 20 0 Z" fill="#0A84FF" />
-                  </svg>
-                )}
-                {isLastInGroup && !isMe && (
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
-                    style={{ position: "absolute", left: -20, bottom: 0, pointerEvents: "none", transform: "scaleX(-1)" }}>
-                    <path d="M0 0 C 2 10, 10 18, 20 20 L 20 0 Z" fill="#262626" />
-                  </svg>
                 )}
               </div>
             </div>

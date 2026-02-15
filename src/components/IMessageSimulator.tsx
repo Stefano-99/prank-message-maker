@@ -72,8 +72,8 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 py-3 px-[16px]"
-        style={{ backgroundColor: "#000000", overflowY: "auto" }}
+        className="flex-1 overflow-y-auto px-[6px] py-3"
+        style={{ backgroundColor: "#000000" }}
       >
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
@@ -83,28 +83,22 @@ export default function IMessageSimulator({
           const isMe = msg.sender === "me";
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          const bubbleColor = isMe ? "#0A84FF" : "#262626";
+          const tailClass = isLastInGroup
+            ? isMe ? "imsg-tail-me" : "imsg-tail-them"
+            : "imsg-no-tail";
 
           return (
             <div
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              <div className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"}`} style={{ marginRight: isMe && isLastInGroup ? 10 : 0, marginLeft: !isMe && isLastInGroup ? 10 : 0 }}>
+              <div
+                className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"} ${tailClass}`}
+              >
                 {msg.image ? (
                   <img src={msg.image} alt="" style={{ borderRadius: "1rem", maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
-                )}
-                {isLastInGroup && isMe && (
-                  <svg width="10" height="16" viewBox="0 0 10 16" style={{ position: "absolute", bottom: 0, right: -10, pointerEvents: "none" }}>
-                    <path d="M0 0 C 0 8, 4 14, 10 16 V 0 H 0 Z" fill={bubbleColor} />
-                  </svg>
-                )}
-                {isLastInGroup && !isMe && (
-                  <svg width="10" height="16" viewBox="0 0 10 16" style={{ position: "absolute", bottom: 0, left: -10, pointerEvents: "none", transform: "scaleX(-1)" }}>
-                    <path d="M0 0 C 0 8, 4 14, 10 16 V 0 H 0 Z" fill={bubbleColor} />
-                  </svg>
                 )}
               </div>
             </div>

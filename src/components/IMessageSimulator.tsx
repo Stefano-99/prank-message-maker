@@ -83,22 +83,28 @@ export default function IMessageSimulator({
           const isMe = msg.sender === "me";
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          const tailClass = isLastInGroup
-            ? isMe ? "imsg-tail-me" : "imsg-tail-them"
-            : "imsg-no-tail";
+          const bubbleColor = isMe ? "#0A84FF" : "#262626";
 
           return (
             <div
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              <div
-                className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"} ${tailClass}`}
-              >
+              <div className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"}`}>
                 {msg.image ? (
                   <img src={msg.image} alt="" style={{ borderRadius: "1rem", maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
+                )}
+                {isLastInGroup && isMe && (
+                  <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: "absolute", bottom: 0, right: -13, minWidth: 20, minHeight: 20, pointerEvents: "none" }}>
+                    <path d="M0 0 C 0 10, 8 18, 20 20 V 0 H 0 Z" fill={bubbleColor} />
+                  </svg>
+                )}
+                {isLastInGroup && !isMe && (
+                  <svg width="20" height="20" viewBox="0 0 20 20" style={{ position: "absolute", bottom: 0, left: -13, minWidth: 20, minHeight: 20, pointerEvents: "none", transform: "scaleX(-1)" }}>
+                    <path d="M0 0 C 0 10, 8 18, 20 20 V 0 H 0 Z" fill={bubbleColor} />
+                  </svg>
                 )}
               </div>
             </div>

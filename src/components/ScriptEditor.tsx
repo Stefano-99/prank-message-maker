@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
-import { Play, RotateCcw, Zap, ImagePlus, X, Video } from "lucide-react";
+import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize } from "lucide-react";
 
 interface Props {
   onPlay: (script: string, speed: number, record: boolean) => void;
   onReset: () => void;
+  onStartPreview: (script: string, speed: number) => void;
   isPlaying: boolean;
   isRecording: boolean;
   isProcessing: boolean;
@@ -29,6 +30,7 @@ ele: Manda mais desses`;
 export default function ScriptEditor({
   onPlay,
   onReset,
+  onStartPreview,
   isPlaying,
   isRecording,
   isProcessing,
@@ -228,6 +230,16 @@ export default function ScriptEditor({
           <RotateCcw className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Preview button */}
+      <button
+        onClick={() => onStartPreview(script, speed)}
+        disabled={isPlaying || !script.trim()}
+        className="w-full flex items-center justify-center gap-2 bg-muted text-foreground py-2.5 rounded-lg font-medium text-sm hover:bg-muted/80 transition-colors disabled:opacity-40 border border-border/50"
+      >
+        <Maximize className="w-4 h-4" />
+        Start Preview
+      </button>
 
       {isRecording && (
         <div className="flex items-center gap-2 text-destructive text-xs font-medium animate-pulse">

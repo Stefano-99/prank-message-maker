@@ -97,7 +97,7 @@ export default function InstagramSimulator({
                 </div>
               ) : (
                 <div
-                  className={`max-w-[70%] px-4 py-2.5 text-[15px] leading-[20px] ${radiusClass} ${
+                  className={`max-w-[70%] px-3.5 py-[7px] text-[14px] leading-[18px] ${radiusClass} ${
                     isMe
                       ? "bg-[#5b5bf6] text-white"
                       : "bg-[#262626] text-white"

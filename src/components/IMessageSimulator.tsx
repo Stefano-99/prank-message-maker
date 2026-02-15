@@ -133,7 +133,7 @@ export default function IMessageSimulator({
       </div>
 
       {/* iOS 17 input bar */}
-      <div className="flex items-center gap-[6px] px-[8px] py-[6px]" style={{ backgroundColor: "#1c1c1e" }}>
+      <div className="flex items-center gap-[6px] px-[8px] py-[6px]" style={{ backgroundColor: "#000000" }}>
         {/* Plus / Apps button */}
         <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full" style={{ backgroundColor: "#636366" }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

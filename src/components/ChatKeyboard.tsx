@@ -36,7 +36,7 @@ const themes = {
     space: "bg-[#3a3a3c] text-white",
     spacePressed: "bg-[#4a4a4c] text-white",
     special: "bg-[#2c2c2e] text-white",
-    suggestions: true,
+    suggestions: false,
     uppercase: true,
   },
 };

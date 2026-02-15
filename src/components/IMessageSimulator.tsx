@@ -63,8 +63,8 @@ export default function IMessageSimulator({
         </div>
         <div className="text-[#0a84ff]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15.5 5H18.5C19.33 5 20 5.67 20 6.5V10.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round"/>
-            <path d="M20 10.5L16 8V17L20 14.5V17.5C20 18.33 19.33 19 18.5 19H5.5C4.67 19 4 18.33 4 17.5V6.5C4 5.67 4.67 5 5.5 5H12" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="3" y="6" width="13" height="12" rx="2" stroke="#0a84ff" strokeWidth="1.8"/>
+            <path d="M16 10.5L21 7.5V16.5L16 13.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
       </div>

@@ -61,18 +61,12 @@ export default function InstagramSimulator({
       </div>
 
       {/* Chat area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 bg-ig-bg">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-[3px] bg-ig-bg">
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
-          const nextMsg = messages[idx + 1];
-          const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
-          const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
           const isMe = msg.sender === "me";
-          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
-
-          const tailClass = isLastInGroup
-            ? isMe ? "ig-tail-me" : "ig-tail-them"
-            : "imsg-no-tail";
+          const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
+          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "" : "mt-[10px]";
 
           return (
             <div
@@ -85,7 +79,11 @@ export default function InstagramSimulator({
                 </div>
               ) : (
                 <div
-                  className={`ig-bubble ${isMe ? "ig-me" : "ig-them"} ${tailClass}`}
+                  className={`max-w-[70%] px-4 py-2.5 rounded-full text-[15px] leading-[20px] ${
+                    isMe
+                      ? "bg-[#5b5bf6] text-white"
+                      : "bg-[#262626] text-white"
+                  }`}
                 >
                   {msg.text}
                 </div>

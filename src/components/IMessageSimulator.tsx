@@ -72,7 +72,7 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-[6px] py-3"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] py-3"
         style={{ backgroundColor: "#000000" }}
       >
         {messages.map((msg, idx) => {

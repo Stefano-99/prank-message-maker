@@ -19,6 +19,7 @@ function formatTime() {
 
 export default function WhatsAppSimulator({
   contactName,
+  contactAvatar,
   messages,
   isTyping,
   typingSender,
@@ -35,8 +36,12 @@ export default function WhatsAppSimulator({
       {/* WhatsApp header */}
       <div className="flex items-center gap-2 px-2 py-2 bg-[#1f2c34]">
         <ArrowLeft className="w-5 h-5 text-[#00a884]" />
-        <div className="w-9 h-9 rounded-full bg-[#2a3942] flex items-center justify-center text-sm font-bold text-[#aebac1]">
-          {contactName[0]?.toUpperCase()}
+        <div className="w-9 h-9 rounded-full bg-[#2a3942] flex items-center justify-center text-sm font-bold text-[#aebac1] overflow-hidden shrink-0">
+          {contactAvatar ? (
+            <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
+          ) : (
+            contactName[0]?.toUpperCase()
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[16px] font-normal text-[#e9edef] truncate">{contactName}</p>

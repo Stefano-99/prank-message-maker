@@ -4,6 +4,7 @@ import { ArrowLeft, Phone, Video, Info, Heart, Image, Mic, Send } from "lucide-r
 
 interface Props {
   contactName: string;
+  contactAvatar?: string | null;
   messages: ChatMessage[];
   isTyping: boolean;
   typingSender: "me" | "them";
@@ -17,6 +18,7 @@ function formatTime() {
 
 export default function InstagramSimulator({
   contactName,
+  contactAvatar,
   messages,
   isTyping,
   typingSender,
@@ -44,8 +46,12 @@ export default function InstagramSimulator({
       <div className="flex items-center gap-3 px-3 py-2.5 bg-ig-header border-b border-border/30">
         <ArrowLeft className="w-5 h-5 text-foreground" />
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 via-accent to-purple-600 p-[2px]">
-          <div className="w-full h-full rounded-full bg-ig-bg flex items-center justify-center text-[10px] font-bold text-foreground">
-            {contactName[0]?.toUpperCase()}
+          <div className="w-full h-full rounded-full bg-ig-bg flex items-center justify-center text-[10px] font-bold text-foreground overflow-hidden">
+            {contactAvatar ? (
+              <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
+            ) : (
+              contactName[0]?.toUpperCase()
+            )}
           </div>
         </div>
         <div className="flex-1 min-w-0">

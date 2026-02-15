@@ -53,15 +53,16 @@ export function useRecorder() {
     mediaRecorder.start(100);
     setIsRecording(true);
 
-    // Capture loop: snapshot DOM → draw on canvas
+    // Capture loop: snapshot DOM → draw on canvas at ~10fps to avoid main thread lag
     const img = new Image();
-    let capturing = false;
+    let lastCapture = 0;
+    const CAPTURE_INTERVAL = 100; // ms between captures (~10fps)
 
-    const captureFrame = async () => {
+    const captureFrame = async (timestamp: number) => {
       if (!recordingRef.current) return;
 
-      if (!capturing) {
-        capturing = true;
+      if (timestamp - lastCapture >= CAPTURE_INTERVAL) {
+        lastCapture = timestamp;
         try {
           const dataUrl = await toPng(element, {
             width: rect.width,
@@ -69,7 +70,6 @@ export function useRecorder() {
             pixelRatio: scale,
             cacheBust: true,
             skipAutoScale: true,
-            includeQueryParams: true,
           });
 
           await new Promise<void>((resolve) => {
@@ -82,9 +82,8 @@ export function useRecorder() {
             img.src = dataUrl;
           });
         } catch {
-          // skip frame on error
+          // skip frame
         }
-        capturing = false;
       }
 
       if (recordingRef.current) {

@@ -1,98 +1,102 @@
 import { useRef, useState, useCallback } from "react";
-import domtoimage from "dom-to-image-more";
 
 export function useRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
-  const targetRef = useRef<HTMLElement | null>(null);
   const recordingRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
-    targetRef.current = element;
     chunksRef.current = [];
     recordingRef.current = true;
 
-    const rect = element.getBoundingClientRect();
-    const scale = 2;
-    const canvas = document.createElement("canvas");
-    canvas.width = rect.width * scale;
-    canvas.height = rect.height * scale;
-    canvasRef.current = canvas;
-    const ctx = canvas.getContext("2d")!;
+    try {
+      // Capture current tab natively - perfect quality
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          // @ts-ignore - preferCurrentTab is valid in Chrome
+          preferCurrentTab: true,
+          frameRate: 30,
+        },
+        audio: false,
+      });
 
-    // Fill initial frame with black
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      streamRef.current = displayStream;
 
-    const stream = canvas.captureStream(30);
-    const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "video/webm;codecs=vp9",
-      videoBitsPerSecond: 10_000_000,
-    });
+      // Get element bounds to crop
+      const rect = element.getBoundingClientRect();
+      const scale = window.devicePixelRatio || 1;
 
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
+      const cropX = rect.left * scale;
+      const cropY = rect.top * scale;
+      const cropW = rect.width * scale;
+      const cropH = rect.height * scale;
 
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fakechat-${Date.now()}.webm`;
-      a.click();
-      URL.revokeObjectURL(url);
-      chunksRef.current = [];
-    };
+      // Create canvas for cropping
+      const canvas = document.createElement("canvas");
+      canvas.width = cropW;
+      canvas.height = cropH;
+      const ctx = canvas.getContext("2d")!;
 
-    mediaRecorderRef.current = mediaRecorder;
-    mediaRecorder.start(100);
-    setIsRecording(true);
+      // Create video element to read the display stream
+      const video = document.createElement("video");
+      video.srcObject = displayStream;
+      video.muted = true;
+      await video.play();
 
-    // Use requestAnimationFrame for smooth frame capture
-    let lastFrameTime = 0;
-    const frameInterval = 1000 / 20; // 20fps is practical for dom-to-image
+      // Draw cropped frames to canvas
+      const drawFrame = () => {
+        if (!recordingRef.current) return;
+        ctx.drawImage(
+          video,
+          cropX, cropY, cropW, cropH,
+          0, 0, cropW, cropH
+        );
+        rafRef.current = requestAnimationFrame(drawFrame);
+      };
+      rafRef.current = requestAnimationFrame(drawFrame);
 
-    const captureLoop = async (timestamp: number) => {
-      if (!recordingRef.current) return;
+      // Record from the cropped canvas
+      const canvasStream = canvas.captureStream(30);
+      const mediaRecorder = new MediaRecorder(canvasStream, {
+        mimeType: "video/webm;codecs=vp9",
+        videoBitsPerSecond: 10_000_000,
+      });
 
-      if (timestamp - lastFrameTime >= frameInterval) {
-        lastFrameTime = timestamp;
-        try {
-          if (targetRef.current && canvasRef.current) {
-            const dataUrl = await domtoimage.toPng(targetRef.current, {
-              width: rect.width,
-              height: rect.height,
-              style: {
-                transform: "none",
-                "transform-origin": "top left",
-              },
-              quality: 1,
-            });
-            const img = new Image();
-            img.onload = () => {
-              if (canvasRef.current) {
-                const c = canvasRef.current.getContext("2d");
-                if (c) {
-                  c.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-                  c.drawImage(img, 0, 0, canvasRef.current.width, canvasRef.current.height);
-                }
-              }
-            };
-            img.src = dataUrl;
-          }
-        } catch {
-          // skip frame on error
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `fakechat-${Date.now()}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+        chunksRef.current = [];
+        video.pause();
+        video.srcObject = null;
+      };
+
+      // Stop recording if user stops screen share
+      displayStream.getVideoTracks()[0].onended = () => {
+        if (recordingRef.current) {
+          stopRecording();
         }
-      }
+      };
 
-      rafRef.current = requestAnimationFrame(captureLoop);
-    };
-
-    rafRef.current = requestAnimationFrame(captureLoop);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start(100);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Recording failed:", err);
+      recordingRef.current = false;
+      setIsRecording(false);
+    }
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -103,6 +107,10 @@ export function useRecorder() {
     }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     }
     setIsRecording(false);
   }, []);

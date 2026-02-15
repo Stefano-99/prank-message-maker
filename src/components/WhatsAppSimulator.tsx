@@ -62,61 +62,43 @@ export default function WhatsAppSimulator({
         }}
       >
         {messages.map((msg, idx) => {
-          const prevMsg = messages[idx - 1];
           const nextMsg = messages[idx + 1];
-          const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
+          const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
+          const prevMsg = messages[idx - 1];
           const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[6px]";
-          const isMe = msg.sender === "me";
-
-          const tailCorner = isFirstInGroup
-            ? isMe ? "rounded-[7.5px] rounded-tr-none" : "rounded-[7.5px] rounded-tl-none"
-            : "rounded-[7.5px]";
 
           return (
+          <div
+            key={msg.id}
+            className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
+          >
             <div
-              key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
+              className={`max-w-[80%] ${msg.image ? "p-[3px]" : "px-[9px] pt-[6px] pb-[8px]"} text-[14.2px] leading-[19px] relative ${
+                msg.sender === "me"
+                  ? `bg-[#005c4b] text-[#e9edef] ${isLastInGroup ? "rounded-[7.5px] rounded-tr-none" : "rounded-[7.5px]"}`
+                  : `bg-[#202c33] text-[#e9edef] ${isLastInGroup ? "rounded-[7.5px] rounded-tl-none" : "rounded-[7.5px]"}`
+              }`}
             >
-              <div className="relative max-w-[80%]">
-                {/* Tail SVG */}
-                {isFirstInGroup && isMe && (
-                  <svg width="8" height="13" viewBox="0 0 8 13" className="absolute top-0 -right-[8px]">
-                    <path d="M0 0 L0 0 C1 4 4 9 8 13 L8 0 Z" fill="#005c4b" />
-                  </svg>
-                )}
-                {isFirstInGroup && !isMe && (
-                  <svg width="8" height="13" viewBox="0 0 8 13" className="absolute top-0 -left-[8px]" style={{ transform: "scaleX(-1)" }}>
-                    <path d="M0 0 L0 0 C1 4 4 9 8 13 L8 0 Z" fill="#202c33" />
-                  </svg>
-                )}
-                <div
-                  className={`${msg.image ? "p-[3px]" : "px-[9px] pt-[6px] pb-[8px]"} text-[14.2px] leading-[19px] ${tailCorner} ${
-                    isMe
-                      ? "bg-[#005c4b] text-[#e9edef]"
-                      : "bg-[#202c33] text-[#e9edef]"
-                  }`}
-                >
-                  {msg.image ? (
-                    <div>
-                      <img src={msg.image} alt="" className="rounded-[5px] max-w-full w-[220px] object-cover" />
-                      <span className="flex items-center justify-end gap-[3px] px-[6px] py-[3px]">
-                        <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
-                        {isMe && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <span>{msg.text}</span>
-                      <span className="inline-flex items-center gap-[3px] ml-[8px] float-right translate-y-[4px]">
-                        <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
-                        {isMe && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
-                      </span>
-                    </>
-                  )}
+              {msg.image ? (
+                <div>
+                  <img src={msg.image} alt="" className="rounded-[5px] max-w-full w-[220px] object-cover" />
+                  <span className="flex items-center justify-end gap-[3px] px-[6px] py-[3px]">
+                    <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
+                    {msg.sender === "me" && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
+                  </span>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <span>{msg.text}</span>
+                  <span className="inline-flex items-center gap-[3px] ml-[8px] float-right translate-y-[4px]">
+                    <span className="text-[11px] text-[#ffffff99]">{formatTime()}</span>
+                    {msg.sender === "me" && <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />}
+                  </span>
+                </>
+              )}
             </div>
+          </div>
           );
         })}
 

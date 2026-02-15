@@ -29,7 +29,7 @@ export default function InstagramSimulator({
   }, [messages, isTyping, currentTypingText]);
 
   return (
-    <div className="w-full max-w-[375px] h-[700px] mx-auto rounded-[2rem] overflow-hidden border-[3px] border-muted bg-ig-bg flex flex-col shadow-2xl shadow-accent/10">
+    <div className="w-[375px] h-[812px] mx-auto overflow-hidden bg-ig-bg flex flex-col shrink-0">
       {/* Status bar */}
       <div className="flex items-center justify-between px-5 py-1.5 text-[11px] text-foreground/80 bg-ig-header">
         <span className="font-medium">{formatTime()}</span>

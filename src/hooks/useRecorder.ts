@@ -6,8 +6,9 @@ export function useRecorder() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recordingRef = useRef(false);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
     chunksRef.current = [];
@@ -15,15 +16,31 @@ export function useRecorder() {
 
     const rect = element.getBoundingClientRect();
     const scale = 2;
+    const w = Math.round(rect.width * scale);
+    const h = Math.round(rect.height * scale);
+
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(rect.width * scale);
-    canvas.height = Math.round(rect.height * scale);
+    canvas.width = w;
+    canvas.height = h;
     canvasRef.current = canvas;
     const ctx = canvas.getContext("2d")!;
+    ctxRef.current = ctx;
 
-    // Fill with initial background
+    // Initial fill
     ctx.fillStyle = "#0b141a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, w, h);
+
+    // First frame before starting recorder
+    try {
+      const first = await html2canvas(element, {
+        scale,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#0b141a",
+        removeContainer: true,
+      });
+      ctx.drawImage(first, 0, 0, w, h);
+    } catch {}
 
     const stream = canvas.captureStream(30);
     const mediaRecorder = new MediaRecorder(stream, {
@@ -41,60 +58,56 @@ export function useRecorder() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `fakechat-${Date.now()}.webm`;
+      document.body.appendChild(a);
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
       chunksRef.current = [];
     };
 
     mediaRecorderRef.current = mediaRecorder;
-    mediaRecorder.start(200);
+    mediaRecorder.start(500);
     setIsRecording(true);
 
-    // Capture frames sequentially to avoid overlapping captures
-    const captureFrame = async () => {
-      if (!recordingRef.current || !canvasRef.current) return;
+    // Sequential frame capture - waits for each capture to complete before next
+    const captureLoop = async () => {
+      if (!recordingRef.current) return;
       try {
         const captured = await html2canvas(element, {
           scale,
           useCORS: true,
           logging: false,
-          backgroundColor: null,
-          foreignObjectRendering: true, // Uses SVG foreignObject - no DOM cloning
-          width: rect.width,
-          height: rect.height,
-          x: 0,
-          y: 0,
-          scrollX: 0,
-          scrollY: 0,
-          windowWidth: rect.width,
-          windowHeight: rect.height,
+          backgroundColor: "#0b141a",
+          removeContainer: true,
         });
-        if (canvasRef.current) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(captured, 0, 0, canvas.width, canvas.height);
+        if (ctxRef.current && canvasRef.current) {
+          ctxRef.current.clearRect(0, 0, w, h);
+          ctxRef.current.drawImage(captured, 0, 0, w, h);
         }
-      } catch {
-        // skip frame
-      }
-      // Schedule next frame only after current one completes
+      } catch {}
+
       if (recordingRef.current) {
-        intervalRef.current = setTimeout(captureFrame, 120); // ~8fps, sequential
+        // ~5fps sequential - low enough to avoid visual interference
+        timeoutRef.current = setTimeout(captureLoop, 200);
       }
     };
 
-    // Start capture loop
-    captureFrame();
+    // Small delay before starting capture loop
+    timeoutRef.current = setTimeout(captureLoop, 300);
   }, []);
 
   const stopRecording = useCallback(() => {
     recordingRef.current = false;
-    if (intervalRef.current) {
-      clearTimeout(intervalRef.current);
-      intervalRef.current = null;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-    }
+    // Wait a moment to capture final state
+    setTimeout(() => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
+    }, 300);
     setIsRecording(false);
   }, []);
 

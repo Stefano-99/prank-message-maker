@@ -1,97 +1,118 @@
 import { useRef, useState, useCallback } from "react";
-import { toPng } from "html-to-image";
 
 export function useRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const recordingRef = useRef(false);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
+  const recordingRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
     chunksRef.current = [];
     recordingRef.current = true;
 
-    const rect = element.getBoundingClientRect();
-    const scale = 2; // HD output
-    const width = Math.round(rect.width * scale);
-    const height = Math.round(rect.height * scale);
+    try {
+      // Native browser capture — zero main-thread impact
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          frameRate: { ideal: 60, max: 60 },
+          // @ts-ignore – Chrome-specific flags
+          preferCurrentTab: true,
+          selfBrowserSurface: "include",
+        } as MediaTrackConstraints,
+        audio: false,
+        // @ts-ignore
+        preferCurrentTab: true,
+        selfBrowserSurface: "include",
+      });
 
-    // Create off-screen canvas
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    canvasRef.current = canvas;
-    const ctx = canvas.getContext("2d")!;
+      streamRef.current = displayStream;
 
-    // Start recording from canvas
-    const stream = canvas.captureStream(30);
-    const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "video/webm;codecs=vp9",
-      videoBitsPerSecond: 8_000_000,
-    });
+      const video = document.createElement("video");
+      video.srcObject = displayStream;
+      video.muted = true;
+      videoRef.current = video;
+      await video.play();
 
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
+      // Wait for video dimensions
+      await new Promise<void>((resolve) => {
+        const check = () => {
+          if (video.videoWidth > 0 && video.videoHeight > 0) resolve();
+          else requestAnimationFrame(check);
+        };
+        check();
+      });
 
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fakechat-${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-      chunksRef.current = [];
-    };
+      // Crop to just the chat element
+      const rect = element.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const scaleX = vw / (window.innerWidth * dpr);
+      const scaleY = vh / (window.innerHeight * dpr);
+      const cropX = rect.left * dpr * scaleX;
+      const cropY = rect.top * dpr * scaleY;
+      const cropW = rect.width * dpr * scaleX;
+      const cropH = rect.height * dpr * scaleY;
 
-    mediaRecorderRef.current = mediaRecorder;
-    mediaRecorder.start(100);
-    setIsRecording(true);
+      // HD output canvas (2x)
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(rect.width * 2);
+      canvas.height = Math.round(rect.height * 2);
+      const ctx = canvas.getContext("2d")!;
 
-    // Capture loop: snapshot DOM → draw on canvas at ~10fps to avoid main thread lag
-    const img = new Image();
-    let lastCapture = 0;
-    const CAPTURE_INTERVAL = 100; // ms between captures (~10fps)
+      // 60fps draw loop — just a blit, no DOM serialization
+      const drawFrame = () => {
+        if (!recordingRef.current) return;
+        ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
+        rafRef.current = requestAnimationFrame(drawFrame);
+      };
+      rafRef.current = requestAnimationFrame(drawFrame);
 
-    const captureFrame = async (timestamp: number) => {
-      if (!recordingRef.current) return;
+      // Record canvas stream
+      const canvasStream = canvas.captureStream(60);
+      const mediaRecorder = new MediaRecorder(canvasStream, {
+        mimeType: "video/webm;codecs=vp9",
+        videoBitsPerSecond: 10_000_000,
+      });
 
-      if (timestamp - lastCapture >= CAPTURE_INTERVAL) {
-        lastCapture = timestamp;
-        try {
-          const dataUrl = await toPng(element, {
-            width: rect.width,
-            height: rect.height,
-            pixelRatio: scale,
-            cacheBust: true,
-            skipAutoScale: true,
-          });
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
 
-          await new Promise<void>((resolve) => {
-            img.onload = () => {
-              ctx.clearRect(0, 0, width, height);
-              ctx.drawImage(img, 0, 0, width, height);
-              resolve();
-            };
-            img.onerror = () => resolve();
-            img.src = dataUrl;
-          });
-        } catch {
-          // skip frame
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `fakechat-${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        chunksRef.current = [];
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.srcObject = null;
+          videoRef.current = null;
         }
-      }
+      };
 
-      if (recordingRef.current) {
-        rafRef.current = requestAnimationFrame(captureFrame);
-      }
-    };
+      // Auto-stop if user ends screen share
+      displayStream.getVideoTracks()[0].onended = () => {
+        if (recordingRef.current) stopRecording();
+      };
 
-    rafRef.current = requestAnimationFrame(captureFrame);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start(100);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Recording failed:", err);
+      recordingRef.current = false;
+      setIsRecording(false);
+    }
   }, []);
 
   const stopRecording = useCallback(() => {
@@ -103,7 +124,10 @@ export function useRecorder() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
     }
-    canvasRef.current = null;
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
     setIsRecording(false);
   }, []);
 

@@ -72,7 +72,7 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-[16px] py-3"
+        className="flex-1 overflow-y-auto px-[20px] py-3"
         style={{ backgroundColor: "#000000" }}
       >
         {messages.map((msg, idx) => {
@@ -102,6 +102,8 @@ export default function IMessageSimulator({
             }
           }
 
+          const tailClass = isLastInGroup ? (isMe ? "imessage-tail-me" : "imessage-tail-them") : "";
+
           return (
             <div
               key={msg.id}
@@ -110,7 +112,7 @@ export default function IMessageSimulator({
               <div
                 className={`max-w-[70%] ${msg.image ? "p-[3px]" : "px-[14px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] ${
                   isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
-                }`}
+                } ${tailClass}`}
                 style={{ borderRadius }}
               >
                 {msg.image ? (

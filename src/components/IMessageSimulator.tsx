@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
-import iosKeyboard from "@/assets/ios-keyboard.png";
+import ChatKeyboard from "./ChatKeyboard";
 
 interface Props {
   contactName: string;
@@ -79,7 +79,7 @@ export default function IMessageSimulator({
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] py-3"
-        style={{ backgroundColor: "#000000", paddingBottom: "220px" }}
+        style={{ backgroundColor: "#000000" }}
       >
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];
@@ -166,10 +166,12 @@ export default function IMessageSimulator({
         </div>
       </div>
 
-      {/* Static keyboard image */}
-      <div className="w-full">
-        <img src={iosKeyboard} alt="" className="w-full block" />
-      </div>
+      {/* Interactive keyboard */}
+      <ChatKeyboard
+        currentText={currentTypingText}
+        isActive={isTyping && typingSender === "me"}
+        theme="ios"
+      />
     </div>
   );
 }

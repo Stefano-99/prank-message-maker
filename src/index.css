@@ -114,3 +114,70 @@
   0%, 100% { transform: scale(1); background: hsl(var(--muted)); }
   50% { transform: scale(0.92); background: hsl(var(--muted-foreground) / 0.3); }
 }
+
+/* iMessage bubble styles */
+.imsg-bubble {
+  border-radius: 1.15rem;
+  line-height: 1.35;
+  max-width: 75%;
+  padding: 0.5rem 0.875rem;
+  position: relative;
+  word-wrap: break-word;
+  font-size: 17px;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.imsg-bubble::before,
+.imsg-bubble::after {
+  bottom: -0.1rem;
+  content: "";
+  height: 1rem;
+  position: absolute;
+}
+
+.imsg-me {
+  background-color: #0A84FF;
+}
+
+.imsg-them {
+  background-color: #262626;
+}
+
+/* Tail for sent messages (right side) */
+.imsg-tail-me::before {
+  border-bottom-left-radius: 0.8rem 0.7rem;
+  border-right: 1rem solid #0A84FF;
+  right: -0.35rem;
+  transform: translate(0, -0.1rem);
+}
+
+.imsg-tail-me::after {
+  background-color: #000000;
+  border-bottom-left-radius: 0.5rem;
+  right: -40px;
+  transform: translate(-30px, -2px);
+  width: 10px;
+}
+
+/* Tail for received messages (left side) */
+.imsg-tail-them::before {
+  border-bottom-right-radius: 0.8rem 0.7rem;
+  border-left: 1rem solid #262626;
+  left: -0.35rem;
+  transform: translate(0, -0.1rem);
+}
+
+.imsg-tail-them::after {
+  background-color: #000000;
+  border-bottom-right-radius: 0.5rem;
+  left: 20px;
+  transform: translate(-30px, -2px);
+  width: 10px;
+}
+
+/* No tail */
+.imsg-no-tail::before,
+.imsg-no-tail::after {
+  display: none;
+}

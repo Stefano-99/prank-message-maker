@@ -67,79 +67,159 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
   };
 
   if (isIOS) {
+    // iOS 17 dark mode keyboard - pixel-perfect
+    const keyBg = "#545456";
+    const keyBgPressed = "#8e8e93";
+    const specialBg = "#3a3a3c";
+    const kbBg = "#1c1c1e";
+
     return (
       <div
-        className="w-full pt-[4px] pb-[4px] px-[3px]"
-        style={{ backgroundColor: "#1c1c1e" }}
+        className="w-full px-[3px] pt-[6px] pb-[3px]"
+        style={{ backgroundColor: kbBg }}
       >
-        <div className="space-y-[6px]">
+        <div className="space-y-[11px]">
           {ROWS.map((row, ri) => (
-            <div key={ri} className="flex justify-center gap-[5px] px-[2px]">
-              {ri === 1 && <div className="w-[4px]" />}
+            <div key={ri} className="flex justify-center gap-[6px] px-[3px]">
+              {ri === 1 && <div className="w-[14px] shrink-0" />}
               {row.map((key) => {
                 const isSpecial = key === "⇧" || key === "⌫";
                 const pressed = isKeyPressed(key);
+
+                if (isSpecial) {
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-center shrink-0 transition-colors duration-75"
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 5,
+                        backgroundColor: pressed ? keyBgPressed : specialBg,
+                      }}
+                    >
+                      {key === "⌫" ? (
+                        <svg width="22" height="17" viewBox="0 0 22 17" fill="none">
+                          <path d="M7.5 0.5H21.5V16.5H7.5L0.5 8.5L7.5 0.5Z" stroke="white" strokeWidth="1.2" strokeLinejoin="round"/>
+                          <line x1="10.5" y1="5" x2="16" y2="12" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+                          <line x1="16" y1="5" x2="10.5" y2="12" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="15" height="16" viewBox="0 0 15 16" fill="none">
+                          <path d="M7.5 1L1 8.5H4.5V15H10.5V8.5H14L7.5 1Z" fill="white"/>
+                        </svg>
+                      )}
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={key}
-                    className={`flex items-center justify-center text-white transition-all duration-75
-                      ${isSpecial ? "w-[40px]" : "flex-1 max-w-[35px]"} h-[42px]
-                      ${pressed ? "scale-110 -translate-y-[4px]" : ""}`}
+                    className="relative flex items-center justify-center flex-1 transition-colors duration-75"
                     style={{
-                      borderRadius: "6px",
-                      backgroundColor: pressed
-                        ? "#6b6b6e"
-                        : isSpecial
-                          ? "#3a3a3c"
-                          : "#4a4a4c",
-                      fontSize: isSpecial ? undefined : "22px",
-                      fontWeight: 300,
+                      height: 42,
+                      maxWidth: 33,
+                      borderRadius: 5,
+                      backgroundColor: pressed ? keyBgPressed : keyBg,
+                      boxShadow: pressed
+                        ? "none"
+                        : "0 1px 0 0 rgba(0,0,0,0.35)",
                     }}
                   >
-                    {key === "⌫" ? (
-                      <svg width="22" height="17" viewBox="0 0 22 17" fill="none">
-                        <path d="M7.5 1L1 8.5L7.5 16H21V1H7.5Z" stroke="white" strokeWidth="1.4" strokeLinejoin="round"/>
-                        <path d="M11 5.5L16 11.5M16 5.5L11 11.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
-                      </svg>
-                    ) : key === "⇧" ? (
-                      <svg width="18" height="20" viewBox="0 0 16 18" fill="none">
-                        <path d="M8 2L1.5 10H5V17H11V10H14.5L8 2Z" fill="white"/>
-                      </svg>
-                    ) : (
-                      key
+                    {/* Key press popup */}
+                    {pressed && (
+                      <div
+                        className="absolute flex items-center justify-center pointer-events-none"
+                        style={{
+                          bottom: "100%",
+                          left: "50%",
+                          transform: "translateX(-50%)",
+                          width: 48,
+                          height: 52,
+                          borderRadius: 9,
+                          backgroundColor: "#636366",
+                          marginBottom: 2,
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+                          zIndex: 50,
+                          fontSize: 30,
+                          fontWeight: 300,
+                          color: "white",
+                        }}
+                      >
+                        {key}
+                      </div>
                     )}
+                    <span
+                      style={{
+                        fontSize: 23,
+                        fontWeight: 300,
+                        color: "white",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {key}
+                    </span>
                   </div>
                 );
               })}
-              {ri === 1 && <div className="w-[4px]" />}
+              {ri === 1 && <div className="w-[14px] shrink-0" />}
             </div>
           ))}
+
           {/* Bottom row */}
-          <div className="flex justify-center gap-[5px] px-[2px]">
+          <div className="flex justify-center gap-[6px] px-[3px]">
             <div
-              className="w-[40px] h-[42px] flex items-center justify-center text-white text-[15px]"
-              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
+              className="flex items-center justify-center shrink-0"
+              style={{
+                width: 44,
+                height: 42,
+                borderRadius: 5,
+                backgroundColor: specialBg,
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
+                fontSize: 15,
+                color: "white",
+              }}
             >
               123
             </div>
             <div
-              className="w-[36px] h-[42px] flex items-center justify-center text-[22px]"
-              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
+              className="flex items-center justify-center shrink-0"
+              style={{
+                width: 40,
+                height: 42,
+                borderRadius: 5,
+                backgroundColor: specialBg,
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
+                fontSize: 22,
+              }}
             >
               😊
             </div>
             <div
-              className="flex-1 h-[42px] flex items-center justify-center text-white text-[15px] transition-all duration-75"
+              className="flex-1 flex items-center justify-center transition-colors duration-75"
               style={{
-                borderRadius: "6px",
-                backgroundColor: activeKey === " " ? "#5a5a5c" : "#4a4a4c",
+                height: 42,
+                borderRadius: 5,
+                backgroundColor: activeKey === " " ? keyBgPressed : keyBg,
+                boxShadow: activeKey === " " ? "none" : "0 1px 0 0 rgba(0,0,0,0.35)",
+                fontSize: 15,
+                color: "white",
               }}
             >
               space
             </div>
             <div
-              className="w-[76px] h-[42px] flex items-center justify-center text-white text-[15px]"
-              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
+              className="flex items-center justify-center shrink-0"
+              style={{
+                width: 78,
+                height: 42,
+                borderRadius: 5,
+                backgroundColor: specialBg,
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
+                fontSize: 15,
+                color: "white",
+              }}
             >
               return
             </div>

@@ -62,28 +62,37 @@ export default function InstagramSimulator({
 
       {/* Chat area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5 bg-ig-bg">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"} animate-message-in`}
-          >
-            {msg.image ? (
-              <div className="max-w-[70%] rounded-[20px] overflow-hidden">
-                <img src={msg.image} alt="" className="max-w-full w-[200px] object-cover" />
-              </div>
-            ) : (
-              <div
-                className={`max-w-[70%] px-3 py-2 rounded-[20px] text-[14px] leading-[18px] ${
-                  msg.sender === "me"
-                    ? "bg-ig-bubble-out text-primary-foreground"
-                    : "bg-ig-bubble-in text-foreground"
-                }`}
-              >
-                {msg.text}
-              </div>
-            )}
-          </div>
-        ))}
+        {messages.map((msg, idx) => {
+          const prevMsg = messages[idx - 1];
+          const nextMsg = messages[idx + 1];
+          const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
+          const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
+          const isMe = msg.sender === "me";
+          const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
+
+          const tailClass = isLastInGroup
+            ? isMe ? "ig-tail-me" : "ig-tail-them"
+            : "imsg-no-tail";
+
+          return (
+            <div
+              key={msg.id}
+              className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
+            >
+              {msg.image ? (
+                <div className="max-w-[70%] rounded-[20px] overflow-hidden">
+                  <img src={msg.image} alt="" className="max-w-full w-[200px] object-cover" />
+                </div>
+              ) : (
+                <div
+                  className={`ig-bubble ${isMe ? "ig-me" : "ig-them"} ${tailClass}`}
+                >
+                  {msg.text}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {/* Typing indicator */}
         {isTyping && typingSender === "them" && (

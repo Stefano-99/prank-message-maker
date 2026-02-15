@@ -123,13 +123,13 @@ export default function IMessageSimulator({
                 {isLastInGroup && isMe && (
                   <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
                     style={{ position: "absolute", right: -8, bottom: 0, display: "block", pointerEvents: "none" }}>
-                    <path d="M 0,25 Q 15,20 20,0 L 0,0 Z" fill="#0A84FF" />
+                    <path d="M 0,25 Q 10,18 15,10 Q 18,5 20,0 L 0,0 Z" fill="#0A84FF" />
                   </svg>
                 )}
                 {isLastInGroup && !isMe && (
                   <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
                     style={{ position: "absolute", left: -8, bottom: 0, display: "block", pointerEvents: "none" }}>
-                    <path d="M 20,25 Q 5,20 0,0 L 20,0 Z" fill="#3A3A3C" />
+                    <path d="M 20,25 Q 10,18 5,10 Q 2,5 0,0 L 20,0 Z" fill="#3A3A3C" />
                   </svg>
                 )}
               </div>

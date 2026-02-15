@@ -87,40 +87,59 @@ export default function IMessageSimulator({
 
           // Bubble radius logic matching iOS
           const isMe = msg.sender === "me";
+          const showTail = isLastInGroup;
+
+          // Radius: last in group gets a tight corner where the tail is
           let borderRadius: string;
           if (isMe) {
-            if (isLastInGroup) {
-              borderRadius = "18px 18px 4px 18px";
-            } else {
-              borderRadius = "18px 4px 4px 18px";
-            }
+            borderRadius = isLastInGroup
+              ? "20px 20px 0px 20px"
+              : isFirstInGroup
+                ? "20px 20px 4px 20px"
+                : "20px 4px 4px 20px";
           } else {
-            if (isLastInGroup) {
-              borderRadius = "18px 18px 18px 4px";
-            } else {
-              borderRadius = "4px 18px 18px 4px";
-            }
+            borderRadius = isLastInGroup
+              ? "20px 20px 20px 0px"
+              : isFirstInGroup
+                ? "20px 20px 20px 4px"
+                : "4px 20px 20px 4px";
           }
-
-          const tailClass = isLastInGroup ? (isMe ? "imessage-tail-me" : "imessage-tail-them") : "";
 
           return (
             <div
               key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
+              className={`flex items-end ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
+              {/* Tail left (them) */}
+              {showTail && !isMe && (
+                <svg width="8" height="16" viewBox="0 0 8 16" className="shrink-0 -mr-[2px]" style={{ marginBottom: -0.5 }}>
+                  <path d="M8,0 C8,6 6,10 3,13 C1.5,14.5 0,16 0,16 L8,16 Z" fill="#262626"/>
+                </svg>
+              )}
+              {!showTail && !isMe && <div className="w-[6px] shrink-0" />}
+
               <div
-                className={`max-w-[70%] ${msg.image ? "p-[3px]" : "px-[14px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] ${
-                  isMe ? "bg-[#0b84fe] text-white" : "bg-[#26262a] text-white"
-                } ${tailClass}`}
-                style={{ borderRadius }}
+                className={`${msg.image ? "p-[3px]" : "px-[16px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] text-white`}
+                style={{
+                  borderRadius,
+                  backgroundColor: isMe ? "#0A84FF" : "#262626",
+                  maxWidth: "75%",
+                }}
               >
                 {msg.image ? (
-                  <img src={msg.image} alt="" className="rounded-[15px] max-w-full w-[220px] object-cover" />
+                  <img src={msg.image} alt="" className="rounded-[17px] max-w-full w-[220px] object-cover" />
                 ) : (
                   msg.text
                 )}
               </div>
+
+              {/* Tail right (me) */}
+              {showTail && isMe && (
+                <svg width="8" height="16" viewBox="0 0 8 16" className="shrink-0 -ml-[2px]" style={{ marginBottom: -0.5 }}>
+                  <path d="M0,0 C0,6 2,10 5,13 C6.5,14.5 8,16 8,16 L0,16 Z" fill="#0A84FF"/>
+                </svg>
+              )}
+              {!showTail && isMe && <div className="w-[6px] shrink-0" />}
             </div>
           );
         })}

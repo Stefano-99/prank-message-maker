@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { Play, RotateCcw, Zap, ImagePlus, X } from "lucide-react";
+import { Play, RotateCcw, Zap, ImagePlus, X, Video } from "lucide-react";
 
 interface Props {
-  onPlay: (script: string, speed: number) => void;
+  onPlay: (script: string, speed: number, record: boolean) => void;
   onReset: () => void;
   isPlaying: boolean;
+  isRecording: boolean;
   platform: "whatsapp" | "instagram" | "imessage";
   onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
@@ -28,6 +29,7 @@ export default function ScriptEditor({
   onPlay,
   onReset,
   isPlaying,
+  isRecording,
   platform,
   onPlatformChange,
   contactName,
@@ -202,21 +204,35 @@ export default function ScriptEditor({
       {/* Action buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onPlay(script, speed)}
+          onClick={() => onPlay(script, speed, false)}
           disabled={isPlaying || !script.trim()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           <Play className="w-4 h-4" />
-          {isPlaying ? "Reproduzindo..." : "Reproduzir"}
+          {isPlaying && !isRecording ? "Reproduzindo..." : "Reproduzir"}
+        </button>
+        <button
+          onClick={() => onPlay(script, speed, true)}
+          disabled={isPlaying || !script.trim()}
+          className="flex items-center justify-center gap-1.5 bg-destructive text-destructive-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+        >
+          <Video className="w-4 h-4" />
+          {isRecording ? "Gravando..." : "Gravar"}
         </button>
         <button
           onClick={onReset}
-          className="flex items-center justify-center gap-1.5 bg-muted text-muted-foreground px-4 py-2.5 rounded-lg text-sm hover:text-foreground transition-colors"
+          className="flex items-center justify-center gap-1.5 bg-muted text-muted-foreground px-3 py-2.5 rounded-lg text-sm hover:text-foreground transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
-          Limpar
         </button>
       </div>
+
+      {isRecording && (
+        <div className="flex items-center gap-2 text-destructive text-xs font-medium animate-pulse">
+          <div className="w-2 h-2 rounded-full bg-destructive" />
+          Gravando... O download será automático ao finalizar.
+        </div>
+      )}
     </div>
   );
 }

@@ -126,7 +126,7 @@ export function useRecorder() {
       try {
         // Determine dimensions (even numbers required for video codecs)
         const rect = element.getBoundingClientRect();
-        const pixelRatio = 2;
+        const pixelRatio = 1.5;
         const width = Math.round(rect.width * pixelRatio) & ~1; // nearest even
         const height = Math.round(rect.height * pixelRatio) & ~1;
 

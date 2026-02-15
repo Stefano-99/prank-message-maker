@@ -49,16 +49,8 @@ export default function IMessageSimulator({
         </div>
       </div>
 
-      {/* iOS 26 Liquid Glass header */}
-      <div
-        className="flex items-center px-2 py-[6px]"
-        style={{
-          background: "linear-gradient(180deg, rgba(40,40,44,0.85) 0%, rgba(30,30,34,0.75) 100%)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
+      {/* iMessage header */}
+      <div className="flex items-center px-2 py-[6px] bg-black border-b border-[#2c2c2e]">
         <div className="flex items-center gap-[2px] text-[#0a84ff]">
           <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
             <path d="M10 2L2 10L10 18" stroke="#0a84ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -140,37 +132,19 @@ export default function IMessageSimulator({
         )}
       </div>
 
-      {/* iOS 26 Liquid Glass input bar */}
-      <div
-        className="flex items-center gap-[6px] px-[8px] py-[6px]"
-        style={{
-          background: "linear-gradient(180deg, rgba(50,50,55,0.7) 0%, rgba(35,35,40,0.85) 100%)",
-          backdropFilter: "blur(30px)",
-          WebkitBackdropFilter: "blur(30px)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-        }}
-      >
-        {/* Plus button - liquid glass style */}
-        <div
-          className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full"
-          style={{
-            background: "linear-gradient(135deg, rgba(120,120,128,0.5) 0%, rgba(80,80,88,0.4) 100%)",
-            border: "1px solid rgba(255,255,255,0.12)",
-          }}
-        >
+      {/* iOS 17 input bar */}
+      <div className="flex items-center gap-[6px] px-[8px] py-[6px]" style={{ backgroundColor: "#1c1c1e" }}>
+        {/* Plus / Apps button */}
+        <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full" style={{ backgroundColor: "#636366" }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+            <path d="M8 3V13M3 8H13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </div>
 
-        {/* Text field - liquid glass capsule */}
+        {/* Text field */}
         <div
-          className="flex-1 flex items-center rounded-[20px] min-h-[36px] px-[14px]"
-          style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "inset 0 1px 1px rgba(255,255,255,0.05)",
-          }}
+          className="flex-1 flex items-center rounded-full min-h-[34px] px-[12px]"
+          style={{ border: "1px solid #3a3a3c" }}
         >
           <div className="flex-1 text-[16px] text-white min-h-[20px]" style={{ fontWeight: 400 }}>
             {isTyping && typingSender === "me" ? (
@@ -179,7 +153,7 @@ export default function IMessageSimulator({
                 <span className="inline-block w-[1.5px] h-[16px] bg-[#0a84ff] animate-pulse ml-[1px] align-text-bottom" />
               </span>
             ) : (
-              <span style={{ color: "rgba(255,255,255,0.35)" }}>iMessage</span>
+              <span style={{ color: "#8e8e93" }}>iMessage</span>
             )}
           </div>
         </div>
@@ -187,22 +161,16 @@ export default function IMessageSimulator({
         {/* Send / Voice memo button */}
         <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0">
           {isTyping && typingSender === "me" ? (
-            <div
-              className="w-[28px] h-[28px] rounded-full flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, #2997ff 0%, #0a84ff 100%)",
-                boxShadow: "0 2px 8px rgba(10,132,255,0.4)",
-              }}
-            >
+            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ backgroundColor: "#0b84fe" }}>
               <svg width="13" height="15" viewBox="0 0 13 15" fill="none">
                 <path d="M6.5 13V2M6.5 2L1.5 7M6.5 2L11.5 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           ) : (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M12 19V22" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round"/>
-              <rect x="9" y="3" width="6" height="12" rx="3" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5"/>
+              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M12 19V22" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="9" y="3" width="6" height="12" rx="3" stroke="#8e8e93" strokeWidth="1.5"/>
             </svg>
           )}
         </div>

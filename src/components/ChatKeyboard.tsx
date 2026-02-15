@@ -67,19 +67,16 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
   };
 
   if (isIOS) {
-    // iOS 26 Liquid Glass keyboard
-    const keyBg = "rgba(255,255,255,0.22)";
-    const keyBgPressed = "rgba(255,255,255,0.45)";
-    const specialBg = "rgba(255,255,255,0.10)";
+    // iOS 17 dark mode keyboard - pixel-perfect
+    const keyBg = "#545456";
+    const keyBgPressed = "#8e8e93";
+    const specialBg = "#3a3a3c";
+    const kbBg = "#1c1c1e";
 
     return (
       <div
         className="w-full px-[3px] pt-[6px] pb-[3px]"
-        style={{
-          background: "linear-gradient(180deg, rgba(35,35,40,0.9) 0%, rgba(25,25,30,0.95) 100%)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-        }}
+        style={{ backgroundColor: kbBg }}
       >
         <div className="space-y-[11px]">
           {ROWS.map((row, ri) => (
@@ -97,9 +94,8 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
                       style={{
                         width: 42,
                         height: 42,
-                        borderRadius: 6,
+                        borderRadius: 5,
                         backgroundColor: pressed ? keyBgPressed : specialBg,
-                        border: "1px solid rgba(255,255,255,0.06)",
                       }}
                     >
                       {key === "⌫" ? (
@@ -124,12 +120,11 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
                     style={{
                       height: 42,
                       maxWidth: 33,
-                      borderRadius: 6,
+                      borderRadius: 5,
                       backgroundColor: pressed ? keyBgPressed : keyBg,
-                      border: "1px solid rgba(255,255,255,0.08)",
                       boxShadow: pressed
-                        ? "0 0 8px rgba(255,255,255,0.15)"
-                        : "0 1px 2px rgba(0,0,0,0.3)",
+                        ? "none"
+                        : "0 1px 0 0 rgba(0,0,0,0.35)",
                     }}
                   >
                     {/* Key press popup */}
@@ -142,11 +137,10 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
                           transform: "translateX(-50%)",
                           width: 48,
                           height: 52,
-                          borderRadius: 10,
-                          background: "linear-gradient(135deg, rgba(120,120,128,0.7) 0%, rgba(80,80,88,0.6) 100%)",
-                          border: "1px solid rgba(255,255,255,0.15)",
+                          borderRadius: 9,
+                          backgroundColor: "#636366",
                           marginBottom: 2,
-                          boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
                           zIndex: 50,
                           fontSize: 30,
                           fontWeight: 300,
@@ -180,10 +174,9 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               style={{
                 width: 44,
                 height: 42,
-                borderRadius: 6,
+                borderRadius: 5,
                 backgroundColor: specialBg,
-                border: "1px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
                 fontSize: 15,
                 color: "white",
               }}
@@ -195,10 +188,9 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               style={{
                 width: 40,
                 height: 42,
-                borderRadius: 6,
+                borderRadius: 5,
                 backgroundColor: specialBg,
-                border: "1px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
                 fontSize: 22,
               }}
             >
@@ -208,10 +200,9 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               className="flex-1 flex items-center justify-center transition-colors duration-75"
               style={{
                 height: 42,
-                borderRadius: 6,
+                borderRadius: 5,
                 backgroundColor: activeKey === " " ? keyBgPressed : keyBg,
-                border: "1px solid rgba(255,255,255,0.08)",
-                boxShadow: activeKey === " " ? "0 0 8px rgba(255,255,255,0.15)" : "0 1px 2px rgba(0,0,0,0.3)",
+                boxShadow: activeKey === " " ? "none" : "0 1px 0 0 rgba(0,0,0,0.35)",
                 fontSize: 15,
                 color: "white",
               }}
@@ -223,10 +214,9 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               style={{
                 width: 78,
                 height: 42,
-                borderRadius: 6,
+                borderRadius: 5,
                 backgroundColor: specialBg,
-                border: "1px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
                 fontSize: 15,
                 color: "white",
               }}

@@ -18,7 +18,7 @@ export function useRecorder() {
     recordingRef.current = true;
     setIsRecording(true);
 
-    const captureInterval = 100; // ~10fps SVG snapshots (lightweight)
+    const captureInterval = 16; // ~60fps SVG snapshots
     const rect = element.getBoundingClientRect();
 
     // Collect SVG snapshots during playback — toSvg is fast (string serialization only)
@@ -81,7 +81,7 @@ export function useRecorder() {
       // Draw first frame so captureStream has content
       ctx.drawImage(probe, 0, 0, width, height);
 
-      const stream = canvas.captureStream(30);
+      const stream = canvas.captureStream(60);
       const chunks: Blob[] = [];
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: "video/webm;codecs=vp9",

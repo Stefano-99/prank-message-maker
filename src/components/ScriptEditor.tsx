@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize } from "lucide-react";
+import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize, UserCircle } from "lucide-react";
 
 interface Props {
   onPlay: (script: string, speed: number) => void;
@@ -13,6 +13,8 @@ interface Props {
   onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
   onContactNameChange: (name: string) => void;
+  contactAvatar: string | null;
+  onContactAvatarChange: (avatar: string | null) => void;
   images: Record<string, string>;
   onImagesChange: (images: Record<string, string>) => void;
 }
@@ -40,12 +42,15 @@ export default function ScriptEditor({
   onPlatformChange,
   contactName,
   onContactNameChange,
+  contactAvatar,
+  onContactAvatarChange,
   images,
   onImagesChange,
 }: Props) {
   const [script, setScript] = useState(EXAMPLE_SCRIPT);
   const [speed, setSpeed] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const imageCounter = useRef(Object.keys(images).length + 1);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,18 +118,58 @@ export default function ScriptEditor({
         </button>
       </div>
 
-      {/* Contact name */}
+      {/* Contact name + avatar */}
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1 block">
           Nome do contato
         </label>
-        <input
-          type="text"
-          value={contactName}
-          onChange={(e) => onContactNameChange(e.target.value)}
-          className="w-full bg-muted border-none rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          placeholder="Nome do contato"
-        />
+        <div className="flex gap-2 items-center">
+          <input
+            type="text"
+            value={contactName}
+            onChange={(e) => onContactNameChange(e.target.value)}
+            className="flex-1 bg-muted border-none rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            placeholder="Nome do contato"
+          />
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (contactAvatar) URL.revokeObjectURL(contactAvatar);
+                onContactAvatarChange(URL.createObjectURL(file));
+              }
+              if (avatarInputRef.current) avatarInputRef.current.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            className="relative w-[36px] h-[36px] rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all group"
+            title="Foto de perfil"
+          >
+            {contactAvatar ? (
+              <>
+                <img src={contactAvatar} alt="Avatar" className="w-full h-full object-cover" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    URL.revokeObjectURL(contactAvatar);
+                    onContactAvatarChange(null);
+                  }}
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3.5 h-3.5 text-white" />
+                </button>
+              </>
+            ) : (
+              <UserCircle className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Script textarea */}

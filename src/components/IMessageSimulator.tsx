@@ -4,6 +4,7 @@ import ChatKeyboard from "./ChatKeyboard";
 
 interface Props {
   contactName: string;
+  contactAvatar?: string | null;
   messages: ChatMessage[];
   isTyping: boolean;
   typingSender: "me" | "them";
@@ -17,6 +18,7 @@ function formatTime() {
 
 export default function IMessageSimulator({
   contactName,
+  contactAvatar,
   messages,
   isTyping,
   typingSender,
@@ -56,8 +58,12 @@ export default function IMessageSimulator({
           <span className="text-[17px]">3</span>
         </div>
         <div className="flex-1 flex flex-col items-center">
-          <div className="w-[40px] h-[40px] rounded-full bg-[#636366] flex items-center justify-center text-[18px] font-medium text-white mb-[2px]">
-            {contactName[0]?.toUpperCase()}
+          <div className="w-[40px] h-[40px] rounded-full bg-[#636366] flex items-center justify-center text-[18px] font-medium text-white mb-[2px] overflow-hidden">
+            {contactAvatar ? (
+              <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
+            ) : (
+              contactName[0]?.toUpperCase()
+            )}
           </div>
           <p className="text-[11px] font-semibold text-white">{contactName}</p>
         </div>

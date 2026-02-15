@@ -12,6 +12,7 @@ const Index = () => {
   const [platform, setPlatform] = useState<"whatsapp" | "instagram" | "imessage">("whatsapp");
   const [contactName, setContactName] = useState("João");
   const [images, setImages] = useState<Record<string, string>>({});
+  const [contactAvatar, setContactAvatar] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [pendingScript, setPendingScript] = useState("");
   const [pendingSpeed, setPendingSpeed] = useState(1);
@@ -100,6 +101,7 @@ const Index = () => {
         <div ref={simulatorRef}>
           <SimulatorComponent
             contactName={contactName}
+            contactAvatar={contactAvatar}
             messages={displayState.visibleMessages}
             isTyping={displayState.isTyping}
             typingSender={displayState.typingSender}
@@ -124,6 +126,8 @@ const Index = () => {
         onPlatformChange={setPlatform}
         contactName={contactName}
         onContactNameChange={setContactName}
+        contactAvatar={contactAvatar}
+        onContactAvatarChange={setContactAvatar}
         images={images}
         onImagesChange={setImages}
       />
@@ -131,6 +135,7 @@ const Index = () => {
       <div className="shrink-0" ref={simulatorRef}>
         <SimulatorComponent
           contactName={contactName}
+          contactAvatar={contactAvatar}
           messages={displayState.visibleMessages}
           isTyping={displayState.isTyping}
           typingSender={displayState.typingSender}

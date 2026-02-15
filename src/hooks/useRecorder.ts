@@ -47,25 +47,26 @@ export function useRecorder() {
 
       // Crop to just the chat element
       const rect = element.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
       const vw = video.videoWidth;
       const vh = video.videoHeight;
 
-      // Map element CSS coordinates to captured video coordinates
-      // getDisplayMedia captures the viewport, so scale is simply video/viewport
-      const scaleX = vw / window.innerWidth;
-      const scaleY = vh / window.innerHeight;
-      const cropX = rect.left * scaleX;
-      const cropY = rect.top * scaleY;
-      const cropW = rect.width * scaleX;
-      const cropH = rect.height * scaleY;
+      // getDisplayMedia captures at native resolution (CSS pixels * DPR)
+      const scaleX = vw / (window.innerWidth * dpr);
+      const scaleY = vh / (window.innerHeight * dpr);
 
-      // Output canvas preserving aspect ratio
+      const cropX = rect.left * dpr * scaleX;
+      const cropY = rect.top * dpr * scaleY;
+      const cropW = rect.width * dpr * scaleX;
+      const cropH = rect.height * dpr * scaleY;
+
+      // HD output canvas (2x element size)
       const canvas = document.createElement("canvas");
-      canvas.width = Math.round(cropW);
-      canvas.height = Math.round(cropH);
+      canvas.width = Math.round(rect.width * 2);
+      canvas.height = Math.round(rect.height * 2);
       const ctx = canvas.getContext("2d")!;
 
-      // 60fps draw loop — just a blit, no DOM serialization
+      // 60fps draw loop
       const drawFrame = () => {
         if (!recordingRef.current) return;
         ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);

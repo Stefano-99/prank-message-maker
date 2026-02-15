@@ -1,138 +1,147 @@
 import { useRef, useState, useCallback } from "react";
+import { toSvg } from "html-to-image";
+
+interface FrameData {
+  svgDataUrl: string;
+  timestamp: number;
+}
 
 export function useRecorder() {
   const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const rafRef = useRef<number | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const recordingRef = useRef(false);
-  const streamRef = useRef<MediaStream | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const framesRef = useRef<FrameData[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
-    chunksRef.current = [];
+    framesRef.current = [];
     recordingRef.current = true;
+    setIsRecording(true);
+
+    const captureInterval = 100; // ~10fps SVG snapshots (lightweight)
+    const rect = element.getBoundingClientRect();
+
+    // Collect SVG snapshots during playback — toSvg is fast (string serialization only)
+    timerRef.current = setInterval(async () => {
+      if (!recordingRef.current) return;
+      try {
+        const svg = await toSvg(element, {
+          width: rect.width,
+          height: rect.height,
+          pixelRatio: 2,
+          cacheBust: false,
+          skipAutoScale: true,
+        });
+        if (recordingRef.current) {
+          framesRef.current.push({
+            svgDataUrl: svg,
+            timestamp: performance.now(),
+          });
+        }
+      } catch {
+        // skip frame
+      }
+    }, captureInterval);
+  }, []);
+
+  const stopRecording = useCallback(async () => {
+    recordingRef.current = false;
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setIsRecording(false);
+
+    const frames = framesRef.current;
+    if (frames.length < 2) {
+      framesRef.current = [];
+      return;
+    }
+
+    // Post-process: render SVG frames to canvas → video
+    setIsProcessing(true);
 
     try {
-      // Native browser capture — zero main-thread impact
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          frameRate: { ideal: 60, max: 60 },
-          // @ts-ignore – Chrome-specific flags
-          preferCurrentTab: true,
-          selfBrowserSurface: "include",
-        } as MediaTrackConstraints,
-        audio: false,
-        // @ts-ignore
-        preferCurrentTab: true,
-        selfBrowserSurface: "include",
+      // Get dimensions from first frame by loading it
+      const probe = new Image();
+      await new Promise<void>((resolve, reject) => {
+        probe.onload = () => resolve();
+        probe.onerror = () => reject();
+        probe.src = frames[0].svgDataUrl;
       });
 
-      streamRef.current = displayStream;
+      const width = probe.naturalWidth;
+      const height = probe.naturalHeight;
 
-      const video = document.createElement("video");
-      video.srcObject = displayStream;
-      video.muted = true;
-      videoRef.current = video;
-      await video.play();
-
-      // Wait for video dimensions
-      await new Promise<void>((resolve) => {
-        const check = () => {
-          if (video.videoWidth > 0 && video.videoHeight > 0) resolve();
-          else requestAnimationFrame(check);
-        };
-        check();
-      });
-
-      // Crop to just the chat element
-      const rect = element.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
-
-      // getDisplayMedia captures at native resolution (CSS pixels * DPR)
-      const scaleX = vw / (window.innerWidth * dpr);
-      const scaleY = vh / (window.innerHeight * dpr);
-
-      const cropX = rect.left * dpr * scaleX;
-      const cropY = rect.top * dpr * scaleY;
-      const cropW = rect.width * dpr * scaleX;
-      const cropH = rect.height * dpr * scaleY;
-
-      // HD output canvas (2x element size)
       const canvas = document.createElement("canvas");
-      canvas.width = Math.round(rect.width * 2);
-      canvas.height = Math.round(rect.height * 2);
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext("2d")!;
 
-      // 60fps draw loop
-      const drawFrame = () => {
-        if (!recordingRef.current) return;
-        ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
-        rafRef.current = requestAnimationFrame(drawFrame);
-      };
-      rafRef.current = requestAnimationFrame(drawFrame);
+      // Draw first frame so captureStream has content
+      ctx.drawImage(probe, 0, 0, width, height);
 
-      // Record canvas stream
-      const canvasStream = canvas.captureStream(60);
-      const mediaRecorder = new MediaRecorder(canvasStream, {
+      const stream = canvas.captureStream(30);
+      const chunks: Blob[] = [];
+      const mediaRecorder = new MediaRecorder(stream, {
         mimeType: "video/webm;codecs=vp9",
-        videoBitsPerSecond: 10_000_000,
+        videoBitsPerSecond: 8_000_000,
       });
 
       mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+        if (e.data.size > 0) chunks.push(e.data);
       };
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `fakechat-${Date.now()}.webm`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        chunksRef.current = [];
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.srcObject = null;
-          videoRef.current = null;
-        }
-      };
+      const donePromise = new Promise<void>((resolve) => {
+        mediaRecorder.onstop = () => resolve();
+      });
 
-      // Auto-stop if user ends screen share
-      displayStream.getVideoTracks()[0].onended = () => {
-        if (recordingRef.current) stopRecording();
-      };
-
-      mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start(100);
-      setIsRecording(true);
+
+      // Render each frame with correct timing
+      for (let i = 0; i < frames.length; i++) {
+        const img = new Image();
+        await new Promise<void>((resolve) => {
+          img.onload = () => {
+            ctx.clearRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = frames[i].svgDataUrl;
+        });
+
+        // Hold frame for its duration
+        const duration =
+          i < frames.length - 1
+            ? frames[i + 1].timestamp - frames[i].timestamp
+            : 200;
+        await new Promise((r) => setTimeout(r, Math.min(duration, 500)));
+      }
+
+      // Hold last frame a bit
+      await new Promise((r) => setTimeout(r, 500));
+
+      mediaRecorder.stop();
+      await donePromise;
+
+      // Download
+      const blob = new Blob(chunks, { type: "video/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fakechat-${Date.now()}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
     } catch (err) {
-      console.error("Recording failed:", err);
-      recordingRef.current = false;
-      setIsRecording(false);
+      console.error("Video processing failed:", err);
     }
+
+    framesRef.current = [];
+    setIsProcessing(false);
   }, []);
 
-  const stopRecording = useCallback(() => {
-    recordingRef.current = false;
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setIsRecording(false);
-  }, []);
-
-  return { isRecording, startRecording, stopRecording };
+  return { isRecording, isProcessing, startRecording, stopRecording };
 }

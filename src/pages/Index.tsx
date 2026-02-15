@@ -63,6 +63,7 @@ const Index = () => {
         onReset={handleReset}
         isPlaying={playback.isPlaying}
         isRecording={recorder.isRecording}
+        isProcessing={recorder.isProcessing}
         platform={platform}
         onPlatformChange={setPlatform}
         contactName={contactName}

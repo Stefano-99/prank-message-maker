@@ -6,6 +6,7 @@ interface Props {
   onReset: () => void;
   isPlaying: boolean;
   isRecording: boolean;
+  isProcessing: boolean;
   platform: "whatsapp" | "instagram" | "imessage";
   onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
@@ -30,6 +31,7 @@ export default function ScriptEditor({
   onReset,
   isPlaying,
   isRecording,
+  isProcessing,
   platform,
   onPlatformChange,
   contactName,
@@ -230,7 +232,13 @@ export default function ScriptEditor({
       {isRecording && (
         <div className="flex items-center gap-2 text-destructive text-xs font-medium animate-pulse">
           <div className="w-2 h-2 rounded-full bg-destructive" />
-          Gravando... O download será automático ao finalizar.
+          Gravando...
+        </div>
+      )}
+      {isProcessing && (
+        <div className="flex items-center gap-2 text-primary text-xs font-medium animate-pulse">
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          Processando vídeo... O download será automático.
         </div>
       )}
     </div>

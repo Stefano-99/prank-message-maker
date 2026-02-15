@@ -70,7 +70,7 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
     return (
       <div
         className="w-full pt-[4px] pb-[4px] px-[3px]"
-        style={{ backgroundColor: "rgba(30, 30, 32, 0.95)" }}
+        style={{ backgroundColor: "#1c1c1e" }}
       >
         <div className="space-y-[6px]">
           {ROWS.map((row, ri) => (
@@ -84,14 +84,14 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
                     key={key}
                     className={`flex items-center justify-center text-white transition-all duration-75
                       ${isSpecial ? "w-[40px]" : "flex-1 max-w-[35px]"} h-[42px]
-                      ${pressed ? "brightness-150 scale-110 -translate-y-[4px]" : ""}`}
+                      ${pressed ? "scale-110 -translate-y-[4px]" : ""}`}
                     style={{
-                      borderRadius: "5px",
-                      backgroundColor: isSpecial
-                        ? "rgba(255,255,255,0.12)"
-                        : pressed
-                          ? "rgba(255,255,255,0.35)"
-                          : "rgba(255,255,255,0.18)",
+                      borderRadius: "6px",
+                      backgroundColor: pressed
+                        ? "#6b6b6e"
+                        : isSpecial
+                          ? "#3a3a3c"
+                          : "#4a4a4c",
                       fontSize: isSpecial ? undefined : "22px",
                       fontWeight: 300,
                     }}
@@ -118,28 +118,28 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
           <div className="flex justify-center gap-[5px] px-[2px]">
             <div
               className="w-[40px] h-[42px] flex items-center justify-center text-white text-[15px]"
-              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
             >
               123
             </div>
             <div
               className="w-[36px] h-[42px] flex items-center justify-center text-[22px]"
-              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
             >
               😊
             </div>
             <div
-              className={`flex-1 h-[42px] flex items-center justify-center text-white text-[15px] transition-all duration-75`}
+              className="flex-1 h-[42px] flex items-center justify-center text-white text-[15px] transition-all duration-75"
               style={{
-                borderRadius: "5px",
-                backgroundColor: activeKey === " " ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.18)",
+                borderRadius: "6px",
+                backgroundColor: activeKey === " " ? "#5a5a5c" : "#4a4a4c",
               }}
             >
               space
             </div>
             <div
               className="w-[76px] h-[42px] flex items-center justify-center text-white text-[15px]"
-              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+              style={{ borderRadius: "6px", backgroundColor: "#3a3a3c" }}
             >
               return
             </div>

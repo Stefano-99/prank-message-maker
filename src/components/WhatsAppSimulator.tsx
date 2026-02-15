@@ -15,7 +15,7 @@ interface Props {
 
 function formatTime() {
   const now = new Date();
-  return now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
 export default function WhatsAppSimulator({
@@ -42,7 +42,7 @@ export default function WhatsAppSimulator({
         <div className="flex-1 min-w-0">
           <p className="text-[16px] font-normal text-[#e9edef] truncate">{contactName}</p>
           <p className="text-[13px] text-[#8696a0]">
-            {isTyping && typingSender === "them" ? "digitando..." : "online"}
+            {isTyping && typingSender === "them" ? "typing..." : "online"}
           </p>
         </div>
         <div className="flex items-center gap-5 text-[#aebac1]">
@@ -125,7 +125,7 @@ export default function WhatsAppSimulator({
                 <span className="inline-block w-[2px] h-[15px] bg-[#00a884] animate-pulse ml-[1px] align-text-bottom" />
               </span>
             ) : (
-              <span className="text-[#8696a0]">Mensagem</span>
+              <span className="text-[#8696a0]">Message</span>
             )}
           </div>
           <Paperclip className="w-[22px] h-[22px] text-[#8696a0] shrink-0 rotate-[135deg]" />

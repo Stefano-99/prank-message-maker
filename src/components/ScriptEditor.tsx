@@ -2,12 +2,13 @@ import { useState, useRef } from "react";
 import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize } from "lucide-react";
 
 interface Props {
-  onPlay: (script: string, speed: number, record: boolean) => void;
+  onPlay: (script: string, speed: number) => void;
   onReset: () => void;
+  onExport: (script: string, speed: number) => void;
   onStartPreview: (script: string, speed: number) => void;
   isPlaying: boolean;
-  isRecording: boolean;
-  isProcessing: boolean;
+  isExporting: boolean;
+  exportProgress: { current: number; total: number } | null;
   platform: "whatsapp" | "instagram" | "imessage";
   onPlatformChange: (p: "whatsapp" | "instagram" | "imessage") => void;
   contactName: string;
@@ -30,10 +31,11 @@ ele: Manda mais desses`;
 export default function ScriptEditor({
   onPlay,
   onReset,
+  onExport,
   onStartPreview,
   isPlaying,
-  isRecording,
-  isProcessing,
+  isExporting,
+  exportProgress,
   platform,
   onPlatformChange,
   contactName,
@@ -65,6 +67,8 @@ export default function ScriptEditor({
     delete newImages[name];
     onImagesChange(newImages);
   };
+
+  const busy = isPlaying || isExporting;
 
   return (
     <div className="w-full max-w-md space-y-4">
@@ -208,20 +212,20 @@ export default function ScriptEditor({
       {/* Action buttons */}
       <div className="flex gap-2">
         <button
-          onClick={() => onPlay(script, speed, false)}
-          disabled={isPlaying || !script.trim()}
+          onClick={() => onPlay(script, speed)}
+          disabled={busy || !script.trim()}
           className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           <Play className="w-4 h-4" />
-          {isPlaying && !isRecording ? "Reproduzindo..." : "Reproduzir"}
+          {isPlaying ? "Reproduzindo..." : "Reproduzir"}
         </button>
         <button
-          onClick={() => onPlay(script, speed, true)}
-          disabled={isPlaying || !script.trim()}
+          onClick={() => onExport(script, speed)}
+          disabled={busy || !script.trim()}
           className="flex items-center justify-center gap-1.5 bg-destructive text-destructive-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
         >
           <Video className="w-4 h-4" />
-          {isRecording ? "Gravando..." : "Gravar"}
+          Exportar
         </button>
         <button
           onClick={onReset}
@@ -234,25 +238,12 @@ export default function ScriptEditor({
       {/* Preview button */}
       <button
         onClick={() => onStartPreview(script, speed)}
-        disabled={isPlaying || !script.trim()}
+        disabled={busy || !script.trim()}
         className="w-full flex items-center justify-center gap-2 bg-muted text-foreground py-2.5 rounded-lg font-medium text-sm hover:bg-muted/80 transition-colors disabled:opacity-40 border border-border/50"
       >
         <Maximize className="w-4 h-4" />
         Start Preview
       </button>
-
-      {isRecording && (
-        <div className="flex items-center gap-2 text-destructive text-xs font-medium animate-pulse">
-          <div className="w-2 h-2 rounded-full bg-destructive" />
-          Gravando...
-        </div>
-      )}
-      {isProcessing && (
-        <div className="flex items-center gap-2 text-primary text-xs font-medium animate-pulse">
-          <div className="w-2 h-2 rounded-full bg-primary" />
-          Processando vídeo... O download será automático.
-        </div>
-      )}
     </div>
   );
 }

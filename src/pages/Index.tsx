@@ -6,6 +6,7 @@ import IMessageSimulator from "@/components/IMessageSimulator";
 import { useChatPlayback, parseScript } from "@/hooks/useChatPlayback";
 import { useRecorder } from "@/hooks/useRecorder";
 import { X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const Index = () => {
   const [platform, setPlatform] = useState<"whatsapp" | "instagram" | "imessage">("whatsapp");
@@ -17,32 +18,31 @@ const Index = () => {
   const playback = useChatPlayback();
   const recorder = useRecorder();
   const simulatorRef = useRef<HTMLDivElement>(null);
-  const [recordOnPlay, setRecordOnPlay] = useState(false);
-  const scriptRef = useRef("");
-  const speedRef = useRef(1);
 
   const handlePlay = useCallback(
-    (script: string, speed: number, shouldRecord: boolean) => {
+    (script: string, speed: number) => {
       const parsed = parseScript(script, images);
-      if (parsed.contact !== "Contato") {
-        setContactName(parsed.contact);
-      }
-      if (shouldRecord) {
-        setRecordOnPlay(true);
-      }
-      scriptRef.current = script;
-      speedRef.current = speed;
+      if (parsed.contact !== "Contato") setContactName(parsed.contact);
       playback.play(parsed.messages, speed);
     },
     [playback, images]
   );
 
+  const handleExport = useCallback(
+    (script: string, speed: number) => {
+      if (!simulatorRef.current) return;
+      const parsed = parseScript(script, images);
+      if (parsed.contact !== "Contato") setContactName(parsed.contact);
+      playback.reset();
+      recorder.startExport(simulatorRef.current, parsed.messages, speed);
+    },
+    [playback, recorder, images]
+  );
+
   const handleStartPreview = useCallback(
     (script: string, speed: number) => {
       const parsed = parseScript(script, images);
-      if (parsed.contact !== "Contato") {
-        setContactName(parsed.contact);
-      }
+      if (parsed.contact !== "Contato") setContactName(parsed.contact);
       setPendingScript(script);
       setPendingSpeed(speed);
       playback.reset();
@@ -51,11 +51,9 @@ const Index = () => {
     [playback, images]
   );
 
-  // Auto-play when entering preview mode
   useEffect(() => {
     if (previewMode && pendingScript) {
       const parsed = parseScript(pendingScript, images);
-      // Small delay to let the UI transition
       const timer = setTimeout(() => {
         playback.play(parsed.messages, pendingSpeed);
       }, 400);
@@ -63,39 +61,31 @@ const Index = () => {
     }
   }, [previewMode]);
 
-  // Exit preview when playback ends
-  // (optional: keep preview showing the final state)
-
   const handleExitPreview = useCallback(() => {
     setPreviewMode(false);
     playback.reset();
     setPendingScript("");
   }, [playback]);
 
-  // Start recording after playback begins (so the first frame is ready)
-  useEffect(() => {
-    if (recordOnPlay && playback.isPlaying && simulatorRef.current && !recorder.isRecording) {
-      recorder.startRecording(simulatorRef.current);
-      setRecordOnPlay(false);
-    }
-  }, [recordOnPlay, playback.isPlaying, recorder]);
-
-  // Auto-stop recording when playback ends
-  useEffect(() => {
-    if (recorder.isRecording && !playback.isPlaying) {
-      setTimeout(() => recorder.stopRecording(), 500);
-    }
-  }, [playback.isPlaying, recorder]);
-
   const handleReset = useCallback(() => {
     playback.reset();
-    if (recorder.isRecording) recorder.stopRecording();
+    if (recorder.isExporting) recorder.cancelExport();
   }, [playback, recorder]);
 
-  const SimulatorComponent = platform === "whatsapp" 
-    ? WhatsAppSimulator 
-    : platform === "imessage" 
-      ? IMessageSimulator 
+  // During export, use recorder's computed state; otherwise use playback state
+  const displayState = recorder.isExporting && recorder.chatState
+    ? recorder.chatState
+    : {
+        visibleMessages: playback.visibleMessages,
+        isTyping: playback.isTyping,
+        typingSender: playback.typingSender,
+        currentTypingText: playback.currentTypingText,
+      };
+
+  const SimulatorComponent = platform === "whatsapp"
+    ? WhatsAppSimulator
+    : platform === "imessage"
+      ? IMessageSimulator
       : InstagramSimulator;
 
   if (previewMode) {
@@ -110,10 +100,10 @@ const Index = () => {
         <div ref={simulatorRef}>
           <SimulatorComponent
             contactName={contactName}
-            messages={playback.visibleMessages}
-            isTyping={playback.isTyping}
-            typingSender={playback.typingSender}
-            currentTypingText={playback.currentTypingText}
+            messages={displayState.visibleMessages}
+            isTyping={displayState.isTyping}
+            typingSender={displayState.typingSender}
+            currentTypingText={displayState.currentTypingText}
           />
         </div>
       </div>
@@ -125,10 +115,11 @@ const Index = () => {
       <ScriptEditor
         onPlay={handlePlay}
         onReset={handleReset}
+        onExport={handleExport}
         onStartPreview={handleStartPreview}
         isPlaying={playback.isPlaying}
-        isRecording={recorder.isRecording}
-        isProcessing={recorder.isProcessing}
+        isExporting={recorder.isExporting}
+        exportProgress={recorder.progress}
         platform={platform}
         onPlatformChange={setPlatform}
         contactName={contactName}
@@ -140,12 +131,31 @@ const Index = () => {
       <div className="shrink-0" ref={simulatorRef}>
         <SimulatorComponent
           contactName={contactName}
-          messages={playback.visibleMessages}
-          isTyping={playback.isTyping}
-          typingSender={playback.typingSender}
-          currentTypingText={playback.currentTypingText}
+          messages={displayState.visibleMessages}
+          isTyping={displayState.isTyping}
+          typingSender={displayState.typingSender}
+          currentTypingText={displayState.currentTypingText}
         />
       </div>
+
+      {/* Export progress overlay */}
+      {recorder.isExporting && recorder.progress && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-background rounded-2xl p-6 max-w-sm w-full mx-4 space-y-4 shadow-xl">
+            <h3 className="text-foreground font-semibold text-center">Renderizando vídeo...</h3>
+            <Progress value={(recorder.progress.current / recorder.progress.total) * 100} className="h-2" />
+            <p className="text-sm text-muted-foreground text-center">
+              Frame {recorder.progress.current} / {recorder.progress.total}
+            </p>
+            <button
+              onClick={recorder.cancelExport}
+              className="w-full py-2 rounded-lg bg-muted text-muted-foreground text-sm hover:text-foreground transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

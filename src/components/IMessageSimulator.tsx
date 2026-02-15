@@ -86,14 +86,14 @@ export default function IMessageSimulator({
           // Gap: 2px within group, 10px between groups
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[10px]";
 
-          // Border radius: 24px default, 4px ONLY on tail corner of last in group
+          // Border radius: 20px mandatory, 2px on tail corner for last in group
           const borderRadius = isLastInGroup
             ? isMe
-              ? "24px 24px 4px 24px"
-              : "24px 24px 24px 4px"
-            : "24px";
+              ? "20px 20px 2px 20px"
+              : "20px 20px 20px 2px"
+            : "20px";
 
-          const bubbleColor = isMe ? "#0A84FF" : "#3A3A3C";
+          const bubbleColor = isMe ? "#0A84FF" : "#262626";
 
           return (
             <div
@@ -114,22 +114,22 @@ export default function IMessageSimulator({
                 }}
               >
                 {msg.image ? (
-                  <img src={msg.image} alt="" style={{ borderRadius: 21, maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
+                  <img src={msg.image} alt="" style={{ borderRadius: 17, maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
                 )}
 
                 {/* SVG tail - ONLY on last message of group */}
                 {isLastInGroup && isMe && (
-                  <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
-                    style={{ position: "absolute", right: -1, bottom: 0, overflow: "visible", pointerEvents: "none" }}>
-                    <path d="M 0,25 L 0,0 Q 10,5 20,25 Z" fill="#0A84FF" />
+                  <svg width="11" height="20" viewBox="0 0 11 20" fill="none"
+                    style={{ position: "absolute", right: -6, bottom: -1, pointerEvents: "none" }}>
+                    <path d="M0.999965 0C0.999965 10 6 18 11 20H-1.90735e-06V0H0.999965Z" fill="#0A84FF" />
                   </svg>
                 )}
                 {isLastInGroup && !isMe && (
-                  <svg width="20" height="25" viewBox="0 0 20 25" fill="none"
-                    style={{ position: "absolute", left: -1, bottom: 0, overflow: "visible", pointerEvents: "none" }}>
-                    <path d="M 20,25 L 20,0 Q 10,5 0,25 Z" fill="#3A3A3C" />
+                  <svg width="11" height="20" viewBox="0 0 11 20" fill="none"
+                    style={{ position: "absolute", left: -6, bottom: -1, pointerEvents: "none", transform: "scaleX(-1)" }}>
+                    <path d="M0.999965 0C0.999965 10 6 18 11 20H-1.90735e-06V0H0.999965Z" fill="#262626" />
                   </svg>
                 )}
               </div>

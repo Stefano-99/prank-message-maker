@@ -135,31 +135,3 @@
 .imsg-them {
   background-color: #262626;
 }
-
-/* Tail for sent messages (bottom-right) */
-.imsg-tail-me::after {
-  content: '';
-  position: absolute;
-  right: -8px;
-  bottom: 0;
-  width: 20px;
-  height: 25px;
-  background: radial-gradient(circle at top left, transparent 50%, #0A84FF 50%);
-}
-
-/* Tail for received messages (bottom-left) */
-.imsg-tail-them::after {
-  content: '';
-  position: absolute;
-  left: -8px;
-  bottom: 0;
-  width: 20px;
-  height: 25px;
-  background: radial-gradient(circle at top right, transparent 50%, #262626 50%);
-}
-
-/* No tail */
-.imsg-no-tail::before,
-.imsg-no-tail::after {
-  display: none;
-}

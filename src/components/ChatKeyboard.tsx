@@ -30,12 +30,12 @@ const themes = {
     uppercase: false,
   },
   ios: {
-    bg: "bg-[#1c1c1e]",
-    key: "bg-[#3a3a3c] text-white",
-    pressed: "bg-[#636366] text-white",
-    space: "bg-[#3a3a3c] text-white",
-    spacePressed: "bg-[#4a4a4c] text-white",
-    special: "bg-[#2c2c2e] text-white",
+    bg: "",
+    key: "text-white",
+    pressed: "text-white",
+    space: "text-white",
+    spacePressed: "text-white",
+    special: "text-white",
     suggestions: false,
     uppercase: true,
   },
@@ -44,6 +44,7 @@ const themes = {
 export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp" }: Props) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const t = themes[theme];
+  const isIOS = theme === "ios";
   const ROWS = t.uppercase ? ROWS_UPPER : ROWS_LOWER;
 
   useEffect(() => {
@@ -65,21 +66,92 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
     return key.toLowerCase() === activeKey.toLowerCase();
   };
 
+  if (isIOS) {
+    return (
+      <div
+        className="w-full pt-[4px] pb-[4px] px-[3px]"
+        style={{ backgroundColor: "rgba(30, 30, 32, 0.95)" }}
+      >
+        <div className="space-y-[6px]">
+          {ROWS.map((row, ri) => (
+            <div key={ri} className="flex justify-center gap-[5px] px-[2px]">
+              {ri === 1 && <div className="w-[4px]" />}
+              {row.map((key) => {
+                const isSpecial = key === "⇧" || key === "⌫";
+                const pressed = isKeyPressed(key);
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center justify-center text-white transition-all duration-75
+                      ${isSpecial ? "w-[40px]" : "flex-1 max-w-[35px]"} h-[42px]
+                      ${pressed ? "brightness-150 scale-110 -translate-y-[4px]" : ""}`}
+                    style={{
+                      borderRadius: "5px",
+                      backgroundColor: isSpecial
+                        ? "rgba(255,255,255,0.12)"
+                        : pressed
+                          ? "rgba(255,255,255,0.35)"
+                          : "rgba(255,255,255,0.18)",
+                      fontSize: isSpecial ? undefined : "22px",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {key === "⌫" ? (
+                      <svg width="22" height="17" viewBox="0 0 22 17" fill="none">
+                        <path d="M7.5 1L1 8.5L7.5 16H21V1H7.5Z" stroke="white" strokeWidth="1.4" strokeLinejoin="round"/>
+                        <path d="M11 5.5L16 11.5M16 5.5L11 11.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/>
+                      </svg>
+                    ) : key === "⇧" ? (
+                      <svg width="18" height="20" viewBox="0 0 16 18" fill="none">
+                        <path d="M8 2L1.5 10H5V17H11V10H14.5L8 2Z" fill="white"/>
+                      </svg>
+                    ) : (
+                      key
+                    )}
+                  </div>
+                );
+              })}
+              {ri === 1 && <div className="w-[4px]" />}
+            </div>
+          ))}
+          {/* Bottom row */}
+          <div className="flex justify-center gap-[5px] px-[2px]">
+            <div
+              className="w-[40px] h-[42px] flex items-center justify-center text-white text-[15px]"
+              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+            >
+              123
+            </div>
+            <div
+              className="w-[36px] h-[42px] flex items-center justify-center text-[22px]"
+              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+            >
+              😊
+            </div>
+            <div
+              className={`flex-1 h-[42px] flex items-center justify-center text-white text-[15px] transition-all duration-75`}
+              style={{
+                borderRadius: "5px",
+                backgroundColor: activeKey === " " ? "rgba(255,255,255,0.30)" : "rgba(255,255,255,0.18)",
+              }}
+            >
+              space
+            </div>
+            <div
+              className="w-[76px] h-[42px] flex items-center justify-center text-white text-[15px]"
+              style={{ borderRadius: "5px", backgroundColor: "rgba(255,255,255,0.12)" }}
+            >
+              return
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // WhatsApp theme
   return (
     <div className={`w-full ${t.bg} pt-0 pb-[2px] px-[3px]`}>
-      {/* Suggestions bar (iOS only) */}
-      {t.suggestions && (
-        <div className="flex items-center h-[40px] border-b border-[#3a3a3c] px-[4px] gap-0">
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Nu</div>
-          <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Și</div>
-          <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
-          <div className="flex-1 flex items-center justify-center h-full text-[15px] text-white">Rpd</div>
-          <div className="w-[1px] h-[20px] bg-[#3a3a3c]" />
-          <div className="w-[40px] flex items-center justify-center h-full text-[14px] text-[#8e8e93]">≡A</div>
-        </div>
-      )}
-
       <div className="pt-[6px] space-y-[6px]">
         {ROWS.map((row, ri) => (
           <div key={ri} className="flex justify-center gap-[5px] px-[2px]">
@@ -119,7 +191,7 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
             😊
           </div>
           <div className={`flex-1 h-[42px] flex items-center justify-center rounded-[5px] text-[15px] transition-all duration-75 ${activeKey === " " ? t.spacePressed : t.space}`}>
-            {theme === "ios" ? "space" : "Português"}
+            Português
           </div>
           <div className={`w-[70px] h-[42px] flex items-center justify-center rounded-[5px] ${t.special} text-[15px]`}>
             return

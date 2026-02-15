@@ -1,147 +1,222 @@
-import { useRef, useState, useCallback } from "react";
-import { toSvg } from "html-to-image";
+import { useState, useCallback, useRef } from "react";
+import { toCanvas } from "html-to-image";
+import { Muxer, ArrayBufferTarget } from "webm-muxer";
+import type { ChatMessage } from "./useChatPlayback";
 
-interface FrameData {
-  svgDataUrl: string;
-  timestamp: number;
+export interface ExportChatState {
+  visibleMessages: ChatMessage[];
+  isTyping: boolean;
+  typingSender: "me" | "them";
+  currentTypingText: string;
 }
 
+interface ExportProgress {
+  current: number;
+  total: number;
+}
+
+/* ─── Pure timeline computation ─── */
+
+function computeTotalDuration(messages: ChatMessage[], speed: number): number {
+  const charDelay = 45 / speed;
+  const pauseBetween = 600 / speed;
+  const imagePause = 400 / speed;
+  const sendPause = 200 / speed;
+
+  let t = 0;
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.image) {
+      t += imagePause;
+    } else {
+      t += charDelay * msg.text.length; // typing
+      t += sendPause; // pause before send
+    }
+    if (i < messages.length - 1) t += pauseBetween;
+  }
+  return t;
+}
+
+function computeStateAtTime(
+  messages: ChatMessage[],
+  speed: number,
+  timeMs: number
+): ExportChatState {
+  const charDelay = 45 / speed;
+  const pauseBetween = 600 / speed;
+  const imagePause = 400 / speed;
+  const sendPause = 200 / speed;
+
+  let t = 0;
+  const visible: ChatMessage[] = [];
+
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+
+    if (msg.image) {
+      const endTime = t + imagePause;
+      if (timeMs < endTime) {
+        return { visibleMessages: [...visible], isTyping: false, typingSender: "me", currentTypingText: "" };
+      }
+      t = endTime;
+      visible.push(msg);
+    } else {
+      const typingEnd = t + charDelay * msg.text.length;
+
+      if (timeMs < typingEnd) {
+        const elapsed = timeMs - t;
+        const charsTyped = Math.min(Math.floor(elapsed / charDelay), msg.text.length);
+        return {
+          visibleMessages: [...visible],
+          isTyping: true,
+          typingSender: msg.sender,
+          currentTypingText: msg.text.substring(0, charsTyped),
+        };
+      }
+
+      t = typingEnd;
+      const sendEnd = t + sendPause;
+
+      if (timeMs < sendEnd) {
+        return {
+          visibleMessages: [...visible],
+          isTyping: true,
+          typingSender: msg.sender,
+          currentTypingText: msg.text,
+        };
+      }
+
+      t = sendEnd;
+      visible.push(msg);
+    }
+
+    if (i < messages.length - 1) {
+      const pauseEnd = t + pauseBetween;
+      if (timeMs < pauseEnd) {
+        return { visibleMessages: [...visible], isTyping: false, typingSender: "me", currentTypingText: "" };
+      }
+      t = pauseEnd;
+    }
+  }
+
+  return { visibleMessages: [...visible], isTyping: false, typingSender: "me", currentTypingText: "" };
+}
+
+/* ─── Hook ─── */
+
 export function useRecorder() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const recordingRef = useRef(false);
-  const framesRef = useRef<FrameData[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [progress, setProgress] = useState<ExportProgress | null>(null);
+  const [chatState, setChatState] = useState<ExportChatState | null>(null);
+  const cancelRef = useRef(false);
 
-  const startRecording = useCallback(async (element: HTMLElement) => {
-    framesRef.current = [];
-    recordingRef.current = true;
-    setIsRecording(true);
+  const startExport = useCallback(
+    async (element: HTMLElement, messages: ChatMessage[], speed: number) => {
+      if (messages.length === 0) return;
+      cancelRef.current = false;
+      setIsExporting(true);
 
-    const captureInterval = 16; // ~60fps SVG snapshots
-    const rect = element.getBoundingClientRect();
+      const FPS = 60;
+      const frameInterval = 1000 / FPS; // 16.667ms
+      const totalDuration = computeTotalDuration(messages, speed) + 1000; // +1s hold at end
+      const totalFrames = Math.ceil(totalDuration / frameInterval);
 
-    // Collect SVG snapshots during playback — toSvg is fast (string serialization only)
-    timerRef.current = setInterval(async () => {
-      if (!recordingRef.current) return;
+      setProgress({ current: 0, total: totalFrames });
+
       try {
-        const svg = await toSvg(element, {
-          width: rect.width,
-          height: rect.height,
-          pixelRatio: 2,
-          cacheBust: false,
-          skipAutoScale: true,
+        // Determine dimensions (even numbers required for video codecs)
+        const rect = element.getBoundingClientRect();
+        const pixelRatio = 2;
+        const width = Math.round(rect.width * pixelRatio) & ~1; // nearest even
+        const height = Math.round(rect.height * pixelRatio) & ~1;
+
+        // Setup muxer
+        const target = new ArrayBufferTarget();
+        const muxer = new Muxer({
+          target,
+          video: { codec: "V_VP9", width, height },
         });
-        if (recordingRef.current) {
-          framesRef.current.push({
-            svgDataUrl: svg,
-            timestamp: performance.now(),
+
+        // Setup WebCodecs encoder
+        const encoder = new VideoEncoder({
+          output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+          error: (err) => console.error("VideoEncoder error:", err),
+        });
+
+        encoder.configure({
+          codec: "vp09.00.10.08",
+          width,
+          height,
+          bitrate: 8_000_000,
+          framerate: FPS,
+        });
+
+        // Frame-by-frame export loop
+        for (let i = 0; i < totalFrames; i++) {
+          if (cancelRef.current) break;
+
+          const t = i * frameInterval;
+          const state = computeStateAtTime(messages, speed, t);
+
+          // Update React state (drives simulator re-render)
+          setChatState(state);
+
+          // Wait for React to render — double rAF ensures paint
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+          );
+
+          // Capture DOM to canvas
+          const canvas = await toCanvas(element, {
+            width: rect.width,
+            height: rect.height,
+            pixelRatio,
+            cacheBust: false,
+            skipAutoScale: true,
           });
+
+          // Create VideoFrame and encode
+          const frame = new VideoFrame(canvas, {
+            timestamp: i * (1_000_000 / FPS), // microseconds
+            duration: 1_000_000 / FPS,
+          });
+          encoder.encode(frame, { keyFrame: i % 60 === 0 });
+          frame.close();
+
+          setProgress({ current: i + 1, total: totalFrames });
         }
-      } catch {
-        // skip frame
-      }
-    }, captureInterval);
-  }, []);
 
-  const stopRecording = useCallback(async () => {
-    recordingRef.current = false;
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsRecording(false);
+        // Finalize
+        await encoder.flush();
+        encoder.close();
+        muxer.finalize();
 
-    const frames = framesRef.current;
-    if (frames.length < 2) {
-      framesRef.current = [];
-      return;
-    }
-
-    // Post-process: render SVG frames to canvas → video
-    setIsProcessing(true);
-
-    try {
-      // Get dimensions from first frame by loading it
-      const probe = new Image();
-      await new Promise<void>((resolve, reject) => {
-        probe.onload = () => resolve();
-        probe.onerror = () => reject();
-        probe.src = frames[0].svgDataUrl;
-      });
-
-      const width = probe.naturalWidth;
-      const height = probe.naturalHeight;
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
-
-      // Draw first frame so captureStream has content
-      ctx.drawImage(probe, 0, 0, width, height);
-
-      const stream = canvas.captureStream(60);
-      const chunks: Blob[] = [];
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "video/webm;codecs=vp9",
-        videoBitsPerSecond: 8_000_000,
-      });
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      const donePromise = new Promise<void>((resolve) => {
-        mediaRecorder.onstop = () => resolve();
-      });
-
-      mediaRecorder.start(100);
-
-      // Render each frame with correct timing
-      for (let i = 0; i < frames.length; i++) {
-        const img = new Image();
-        await new Promise<void>((resolve) => {
-          img.onload = () => {
-            ctx.clearRect(0, 0, width, height);
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve();
-          };
-          img.onerror = () => resolve();
-          img.src = frames[i].svgDataUrl;
-        });
-
-        // Hold frame for its duration
-        const duration =
-          i < frames.length - 1
-            ? frames[i + 1].timestamp - frames[i].timestamp
-            : 200;
-        await new Promise((r) => setTimeout(r, Math.min(duration, 500)));
+        if (!cancelRef.current) {
+          // Download
+          const blob = new Blob([target.buffer], { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `fakechat-${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+      } catch (err) {
+        console.error("Frame-by-frame export failed:", err);
       }
 
-      // Hold last frame a bit
-      await new Promise((r) => setTimeout(r, 500));
+      setChatState(null);
+      setProgress(null);
+      setIsExporting(false);
+    },
+    []
+  );
 
-      mediaRecorder.stop();
-      await donePromise;
-
-      // Download
-      const blob = new Blob(chunks, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fakechat-${Date.now()}.webm`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    } catch (err) {
-      console.error("Video processing failed:", err);
-    }
-
-    framesRef.current = [];
-    setIsProcessing(false);
+  const cancelExport = useCallback(() => {
+    cancelRef.current = true;
   }, []);
 
-  return { isRecording, isProcessing, startRecording, stopRecording };
+  return { isExporting, progress, chatState, startExport, cancelExport };
 }

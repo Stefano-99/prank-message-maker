@@ -127,7 +127,7 @@ export default function IMessageSimulator({
       </div>
 
       {/* Input area */}
-      <div className="flex items-center gap-[8px] px-[10px] py-[8px] bg-black border-t border-[#2c2c2e]">
+      <div className="flex items-center gap-[8px] px-[10px] py-[8px] bg-black">
         <div className="w-[32px] h-[32px] flex items-center justify-center shrink-0 rounded-full bg-[#3a3a3c]">
           <span className="text-[20px] text-white leading-none font-light">+</span>
         </div>

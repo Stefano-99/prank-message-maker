@@ -1,116 +1,99 @@
 import { useRef, useState, useCallback } from "react";
+import html2canvas from "html2canvas";
 
 export function useRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const rafRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recordingRef = useRef(false);
-  const streamRef = useRef<MediaStream | null>(null);
 
   const startRecording = useCallback(async (element: HTMLElement) => {
     chunksRef.current = [];
     recordingRef.current = true;
 
-    try {
-      // Capture current tab natively - perfect quality
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          // @ts-ignore - preferCurrentTab is valid in Chrome
-          preferCurrentTab: true,
-          frameRate: 30,
-        },
-        audio: false,
-      });
+    const rect = element.getBoundingClientRect();
+    const scale = 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(rect.width * scale);
+    canvas.height = Math.round(rect.height * scale);
+    canvasRef.current = canvas;
+    const ctx = canvas.getContext("2d")!;
 
-      streamRef.current = displayStream;
+    // Fill with initial background
+    ctx.fillStyle = "#0b141a";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Get element bounds to crop
-      const rect = element.getBoundingClientRect();
-      const scale = window.devicePixelRatio || 1;
+    const stream = canvas.captureStream(30);
+    const mediaRecorder = new MediaRecorder(stream, {
+      mimeType: "video/webm;codecs=vp9",
+      videoBitsPerSecond: 8_000_000,
+    });
 
-      const cropX = rect.left * scale;
-      const cropY = rect.top * scale;
-      const cropW = rect.width * scale;
-      const cropH = rect.height * scale;
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
 
-      // Create canvas for cropping
-      const canvas = document.createElement("canvas");
-      canvas.width = cropW;
-      canvas.height = cropH;
-      const ctx = canvas.getContext("2d")!;
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fakechat-${Date.now()}.webm`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      chunksRef.current = [];
+    };
 
-      // Create video element to read the display stream
-      const video = document.createElement("video");
-      video.srcObject = displayStream;
-      video.muted = true;
-      await video.play();
+    mediaRecorderRef.current = mediaRecorder;
+    mediaRecorder.start(200);
+    setIsRecording(true);
 
-      // Draw cropped frames to canvas
-      const drawFrame = () => {
-        if (!recordingRef.current) return;
-        ctx.drawImage(
-          video,
-          cropX, cropY, cropW, cropH,
-          0, 0, cropW, cropH
-        );
-        rafRef.current = requestAnimationFrame(drawFrame);
-      };
-      rafRef.current = requestAnimationFrame(drawFrame);
-
-      // Record from the cropped canvas
-      const canvasStream = canvas.captureStream(30);
-      const mediaRecorder = new MediaRecorder(canvasStream, {
-        mimeType: "video/webm;codecs=vp9",
-        videoBitsPerSecond: 10_000_000,
-      });
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `fakechat-${Date.now()}.webm`;
-        a.click();
-        URL.revokeObjectURL(url);
-        chunksRef.current = [];
-        video.pause();
-        video.srcObject = null;
-      };
-
-      // Stop recording if user stops screen share
-      displayStream.getVideoTracks()[0].onended = () => {
-        if (recordingRef.current) {
-          stopRecording();
+    // Capture frames sequentially to avoid overlapping captures
+    const captureFrame = async () => {
+      if (!recordingRef.current || !canvasRef.current) return;
+      try {
+        const captured = await html2canvas(element, {
+          scale,
+          useCORS: true,
+          logging: false,
+          backgroundColor: null,
+          foreignObjectRendering: true, // Uses SVG foreignObject - no DOM cloning
+          width: rect.width,
+          height: rect.height,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: rect.width,
+          windowHeight: rect.height,
+        });
+        if (canvasRef.current) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(captured, 0, 0, canvas.width, canvas.height);
         }
-      };
+      } catch {
+        // skip frame
+      }
+      // Schedule next frame only after current one completes
+      if (recordingRef.current) {
+        intervalRef.current = setTimeout(captureFrame, 120); // ~8fps, sequential
+      }
+    };
 
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(100);
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Recording failed:", err);
-      recordingRef.current = false;
-      setIsRecording(false);
-    }
+    // Start capture loop
+    captureFrame();
   }, []);
 
   const stopRecording = useCallback(() => {
     recordingRef.current = false;
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
+    if (intervalRef.current) {
+      clearTimeout(intervalRef.current);
+      intervalRef.current = null;
     }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.stop();
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
     }
     setIsRecording(false);
   }, []);

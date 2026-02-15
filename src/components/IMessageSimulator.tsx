@@ -29,7 +29,7 @@ export default function IMessageSimulator({
   }, [messages, isTyping, currentTypingText]);
 
   return (
-    <div className="w-[375px] h-[812px] mx-auto overflow-hidden bg-black flex flex-col shrink-0" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif' }}>
+    <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
       {/* iOS Status bar */}
       <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white bg-black">
         <span>{formatTime()}</span>
@@ -72,7 +72,7 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-[20px] py-3"
+        className="flex-1 overflow-y-auto px-[6px] py-3"
         style={{ backgroundColor: "#000000" }}
       >
         {messages.map((msg, idx) => {
@@ -81,65 +81,70 @@ export default function IMessageSimulator({
           const isLastInGroup = !nextMsg || nextMsg.sender !== msg.sender;
           const isFirstInGroup = !prevMsg || prevMsg.sender !== msg.sender;
           const sameSenderAsPrev = prevMsg && prevMsg.sender === msg.sender;
-
-          // Spacing: tight between same sender, wider between different
           const marginTop = idx === 0 ? "" : sameSenderAsPrev ? "mt-[2px]" : "mt-[8px]";
-
-          // Bubble radius logic matching iOS
           const isMe = msg.sender === "me";
           const showTail = isLastInGroup;
 
-          // Radius: last in group gets a tight corner where the tail is
           let borderRadius: string;
           if (isMe) {
-            borderRadius = isLastInGroup
-              ? "20px 20px 0px 20px"
+            borderRadius = showTail
+              ? "24px 24px 4px 24px"
               : isFirstInGroup
-                ? "20px 20px 4px 20px"
-                : "20px 4px 4px 20px";
+                ? "24px 24px 4px 24px"
+                : "24px 4px 4px 24px";
           } else {
-            borderRadius = isLastInGroup
-              ? "20px 20px 20px 0px"
+            borderRadius = showTail
+              ? "24px 24px 24px 4px"
               : isFirstInGroup
-                ? "20px 20px 20px 4px"
-                : "4px 20px 20px 4px";
+                ? "24px 24px 24px 4px"
+                : "4px 24px 24px 4px";
           }
+
+          const bubbleColor = isMe ? "#0A84FF" : "#262626";
 
           return (
             <div
               key={msg.id}
               className={`flex items-end ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              {/* Tail left (them) */}
+              {/* Left tail (them) */}
               {showTail && !isMe && (
-                <svg width="8" height="16" viewBox="0 0 8 16" className="shrink-0 -mr-[2px]" style={{ marginBottom: -0.5 }}>
-                  <path d="M8,0 C8,6 6,10 3,13 C1.5,14.5 0,16 0,16 L8,16 Z" fill="#262626"/>
-                </svg>
+                <div style={{ width: 10, alignSelf: "flex-end", flexShrink: 0 }}>
+                  <svg width="10" height="20" viewBox="0 0 10 20" fill="none" style={{ display: "block" }}>
+                    <path d="M10,0 L10,17 C10,17 10,20 7,20 C9,19 10,17 10,17 L10,0 C10,0 9,10 5,14 C2,17 0,18 0,20 L0,20 C3,19 7,16 9,12 C10,9 10,4 10,0 Z" fill={bubbleColor} />
+                  </svg>
+                </div>
               )}
-              {!showTail && !isMe && <div className="w-[6px] shrink-0" />}
+              {!showTail && !isMe && <div style={{ width: 10, flexShrink: 0 }} />}
 
               <div
-                className={`${msg.image ? "p-[3px]" : "px-[16px] py-[8px]"} text-[17px] leading-[22px] tracking-[-0.01em] text-white`}
                 style={{
                   borderRadius,
-                  backgroundColor: isMe ? "#0A84FF" : "#262626",
+                  backgroundColor: bubbleColor,
+                  padding: msg.image ? "3px" : "8px 16px",
+                  color: "#FFFFFF",
+                  fontSize: 17,
+                  lineHeight: "22px",
+                  letterSpacing: "-0.01em",
                   maxWidth: "75%",
                 }}
               >
                 {msg.image ? (
-                  <img src={msg.image} alt="" className="rounded-[17px] max-w-full w-[220px] object-cover" />
+                  <img src={msg.image} alt="" style={{ borderRadius: 21, maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
                 ) : (
                   msg.text
                 )}
               </div>
 
-              {/* Tail right (me) */}
+              {/* Right tail (me) */}
               {showTail && isMe && (
-                <svg width="8" height="16" viewBox="0 0 8 16" className="shrink-0 -ml-[2px]" style={{ marginBottom: -0.5 }}>
-                  <path d="M0,0 C0,6 2,10 5,13 C6.5,14.5 8,16 8,16 L0,16 Z" fill="#0A84FF"/>
-                </svg>
+                <div style={{ width: 10, alignSelf: "flex-end", flexShrink: 0 }}>
+                  <svg width="10" height="20" viewBox="0 0 10 20" fill="none" style={{ display: "block" }}>
+                    <path d="M0,0 L0,17 C0,17 0,20 3,20 C1,19 0,17 0,17 L0,0 C0,0 1,10 5,14 C8,17 10,18 10,20 L10,20 C7,19 3,16 1,12 C0,9 0,4 0,0 Z" fill={bubbleColor} />
+                  </svg>
+                </div>
               )}
-              {!showTail && isMe && <div className="w-[6px] shrink-0" />}
+              {!showTail && isMe && <div style={{ width: 10, flexShrink: 0 }} />}
             </div>
           );
         })}

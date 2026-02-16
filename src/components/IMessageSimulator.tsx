@@ -36,7 +36,9 @@ export default function IMessageSimulator({
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0) 100%)",
+          background: "linear-gradient(to bottom, rgba(20,20,20,0.6) 0%, rgba(20,20,20,0.01) 100%)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
         }}
       >
         {/* iOS Status bar */}

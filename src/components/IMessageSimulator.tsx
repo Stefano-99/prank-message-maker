@@ -32,22 +32,11 @@ export default function IMessageSimulator({
 
   return (
     <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0 relative" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
-      {/* Header blur layer - only covers top portion */}
-      <div
-        className="absolute top-0 left-0 w-full z-[99]"
-        style={{
-          height: "70px",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)",
-        }}
-      />
       {/* Header gradient overlay + content */}
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 55%, rgba(0,0,0,0) 100%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
           paddingBottom: "16px",
         }}
       >

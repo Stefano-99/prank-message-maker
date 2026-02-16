@@ -36,7 +36,7 @@ export default function IMessageSimulator({
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)",
           paddingBottom: "16px",
         }}
       >

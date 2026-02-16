@@ -39,7 +39,7 @@ export default function IMessageSimulator({
           backgroundColor: "rgba(0, 0, 0, 0.45)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
-          borderBottom: "0.5px solid rgba(255, 255, 255, 0.1)",
+          borderBottom: "none",
         }}
       >
         {/* iOS Status bar */}

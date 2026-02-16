@@ -36,7 +36,7 @@ export default function IMessageSimulator({
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          backgroundColor: "rgba(20, 20, 20, 0.15)",
+          backgroundColor: "rgba(0, 0, 0, 0.45)",
           backdropFilter: "blur(30px)",
           WebkitBackdropFilter: "blur(30px)",
           borderBottom: "0.5px solid rgba(255, 255, 255, 0.1)",

@@ -31,7 +31,7 @@ export default function IMessageSimulator({
   }, [messages, isTyping, currentTypingText]);
 
   return (
-    <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
+    <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0 relative" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
       {/* iOS Status bar */}
       <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white bg-black">
         <span>{formatTime()}</span>
@@ -49,25 +49,37 @@ export default function IMessageSimulator({
         </div>
       </div>
 
-      {/* iMessage header */}
-      <div className="flex items-center px-2 py-[6px] bg-black border-b border-[#2c2c2e]">
-        <div className="flex items-center gap-[2px] text-[#0a84ff]">
-          <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
-            <path d="M10 2L2 10L10 18" stroke="#0a84ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* iMessage header - iOS 18 Glassmorphism */}
+      <div
+        className="flex items-center justify-between px-3 py-[8px] absolute top-0 left-0 w-full z-[100]"
+        style={{
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
+      >
+        {/* Left - Back */}
+        <div className="flex items-center gap-[2px] text-[#0a84ff] min-w-[50px]">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+            <path d="M9 1L1 9L9 17" stroke="#0a84ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <span className="text-[17px]">3</span>
+          <span className="text-[17px]">2</span>
         </div>
-        <div className="flex-1 flex flex-col items-center">
-          <div className="w-[40px] h-[40px] rounded-full bg-[#636366] flex items-center justify-center text-[18px] font-medium text-white mb-[2px] overflow-hidden">
+
+        {/* Center - Profile */}
+        <div className="flex flex-col items-center">
+          <div className="w-[36px] h-[36px] rounded-full bg-[#636366] flex items-center justify-center text-[16px] font-medium text-white overflow-hidden">
             {contactAvatar ? (
               <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
             ) : (
               contactName[0]?.toUpperCase()
             )}
           </div>
-          <p className="text-[11px] font-semibold text-white">{contactName}</p>
+          <p className="text-[12px] font-normal text-[#e5e5ea] mt-[2px]">{contactName}</p>
         </div>
-        <div className="text-[#0a84ff]">
+
+        {/* Right - FaceTime */}
+        <div className="text-[#0a84ff] min-w-[50px] flex justify-end">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <rect x="3" y="6" width="13" height="12" rx="2" stroke="#0a84ff" strokeWidth="1.8"/>
             <path d="M16 10.5L21 7.5V16.5L16 13.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
@@ -78,8 +90,8 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] py-3"
-        style={{ backgroundColor: "#000000" }}
+        className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] pb-3"
+        style={{ backgroundColor: "#000000", paddingTop: "100px" }}
       >
         {messages.map((msg, idx) => {
           const prevMsg = messages[idx - 1];

@@ -76,7 +76,7 @@ export default function IMessageSimulator({
                 contactName[0]?.toUpperCase()
               )}
             </div>
-            <p className="text-[13px] font-normal text-[#e5e5ea] mt-[3px]">{contactName}</p>
+            <span className="mt-[4px] px-[8px] py-[2px] rounded-full text-[12px] font-normal text-white" style={{ backgroundColor: "rgba(60, 60, 60, 0.7)" }}>{contactName}</span>
           </div>
 
           {/* Right - FaceTime */}

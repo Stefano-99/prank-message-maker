@@ -36,9 +36,10 @@ export default function IMessageSimulator({
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          backgroundColor: "rgba(28, 28, 30, 0.85)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          backgroundColor: "rgba(20, 20, 20, 0.15)",
+          backdropFilter: "blur(30px)",
+          WebkitBackdropFilter: "blur(30px)",
+          borderBottom: "0.5px solid rgba(255, 255, 255, 0.1)",
         }}
       >
         {/* iOS Status bar */}

@@ -32,58 +32,61 @@ export default function IMessageSimulator({
 
   return (
     <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0 relative" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
-      {/* iOS Status bar */}
-      <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white bg-black">
-        <span>{formatTime()}</span>
-        <div className="flex items-center gap-[5px]">
-          <div className="flex gap-[3px] items-end">
-            <div className="w-[3px] h-[4px] bg-white rounded-[0.5px]" />
-            <div className="w-[3px] h-[6px] bg-white rounded-[0.5px]" />
-            <div className="w-[3px] h-[9px] bg-white rounded-[0.5px]" />
-            <div className="w-[3px] h-[12px] bg-white rounded-[0.5px]" />
-          </div>
-          <div className="w-[22px] h-[11px] border border-white rounded-[3px] relative ml-1">
-            <div className="absolute inset-[1.5px] right-[2px] bg-white rounded-[1px]" />
-            <div className="absolute -right-[3px] top-[2.5px] w-[1.5px] h-[5px] bg-white rounded-r-[1px]" />
-          </div>
-        </div>
-      </div>
-
-      {/* iMessage header - iOS 18 Glassmorphism */}
+      {/* iMessage header - iOS 18 Glassmorphism (includes status bar) */}
       <div
-        className="flex items-center justify-between px-3 py-[8px] absolute top-0 left-0 w-full z-[100]"
+        className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          backgroundColor: "rgba(28, 28, 30, 0.85)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
         }}
       >
-        {/* Left - Back */}
-        <div className="flex items-center gap-[2px] text-[#0a84ff] min-w-[50px]">
-          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-            <path d="M9 1L1 9L9 17" stroke="#0a84ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="text-[17px]">2</span>
-        </div>
-
-        {/* Center - Profile */}
-        <div className="flex flex-col items-center">
-          <div className="w-[36px] h-[36px] rounded-full bg-[#636366] flex items-center justify-center text-[16px] font-medium text-white overflow-hidden">
-            {contactAvatar ? (
-              <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
-            ) : (
-              contactName[0]?.toUpperCase()
-            )}
+        {/* iOS Status bar */}
+        <div className="flex items-center justify-between px-6 pt-[14px] pb-[6px] text-[15px] font-semibold text-white">
+          <span>{formatTime()}</span>
+          <div className="flex items-center gap-[5px]">
+            <div className="flex gap-[3px] items-end">
+              <div className="w-[3px] h-[4px] bg-white rounded-[0.5px]" />
+              <div className="w-[3px] h-[6px] bg-white rounded-[0.5px]" />
+              <div className="w-[3px] h-[9px] bg-white rounded-[0.5px]" />
+              <div className="w-[3px] h-[12px] bg-white rounded-[0.5px]" />
+            </div>
+            <div className="w-[22px] h-[11px] border border-white rounded-[3px] relative ml-1">
+              <div className="absolute inset-[1.5px] right-[2px] bg-white rounded-[1px]" />
+              <div className="absolute -right-[3px] top-[2.5px] w-[1.5px] h-[5px] bg-white rounded-r-[1px]" />
+            </div>
           </div>
-          <p className="text-[12px] font-normal text-[#e5e5ea] mt-[2px]">{contactName}</p>
         </div>
 
-        {/* Right - FaceTime */}
-        <div className="text-[#0a84ff] min-w-[50px] flex justify-end">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="6" width="13" height="12" rx="2" stroke="#0a84ff" strokeWidth="1.8"/>
-            <path d="M16 10.5L21 7.5V16.5L16 13.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+        {/* Header content */}
+        <div className="flex items-center justify-between px-3 py-[8px]">
+          {/* Left - Back */}
+          <div className="flex items-center gap-[2px] text-[#0a84ff] min-w-[50px]">
+            <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+              <path d="M9 1L1 9L9 17" stroke="#0a84ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <span className="text-[17px]">2</span>
+          </div>
+
+          {/* Center - Profile (column layout) */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="w-[40px] h-[40px] rounded-full bg-[#636366] flex items-center justify-center text-[18px] font-medium text-white overflow-hidden">
+              {contactAvatar ? (
+                <img src={contactAvatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                contactName[0]?.toUpperCase()
+              )}
+            </div>
+            <p className="text-[13px] font-normal text-[#e5e5ea] mt-[3px]">{contactName}</p>
+          </div>
+
+          {/* Right - FaceTime */}
+          <div className="text-[#0a84ff] min-w-[50px] flex justify-end">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="6" width="13" height="12" rx="2" stroke="#0a84ff" strokeWidth="1.8"/>
+              <path d="M16 10.5L21 7.5V16.5L16 13.5" stroke="#0a84ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
         </div>
       </div>
 

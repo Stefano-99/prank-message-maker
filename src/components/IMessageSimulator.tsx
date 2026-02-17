@@ -32,12 +32,13 @@ export default function IMessageSimulator({
 
   return (
     <div className="w-[375px] h-[812px] mx-auto bg-black flex flex-col shrink-0 relative" style={{ fontFamily: '-apple-system, "SF Pro Text", "Helvetica Neue", sans-serif', overflow: 'hidden' }}>
-      {/* Header gradient overlay + content */}
+      {/* iMessage header - iOS 18 Glassmorphism (includes status bar) */}
       <div
         className="absolute top-0 left-0 w-full z-[100] flex flex-col"
         style={{
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.3) 75%, rgba(0,0,0,0) 100%)",
-          paddingBottom: "16px",
+          backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 80%)",
+          backdropFilter: "blur(30px)",
+          WebkitBackdropFilter: "blur(30px)",
         }}
       >
         {/* iOS Status bar */}
@@ -76,7 +77,7 @@ export default function IMessageSimulator({
                 contactName[0]?.toUpperCase()
               )}
             </div>
-            <span className="mt-[4px] px-[8px] py-[2px] rounded-full text-[12px] font-normal text-white" style={{ backgroundColor: "rgba(60, 60, 60, 0.7)" }}>{contactName}</span>
+            <p className="text-[13px] font-normal text-[#e5e5ea] mt-[3px]">{contactName}</p>
           </div>
 
           {/* Right - FaceTime */}

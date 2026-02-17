@@ -37,7 +37,7 @@ const themes = {
     spacePressed: "text-white",
     special: "text-white",
     suggestions: false,
-    uppercase: true,
+    uppercase: false,
   },
 };
 
@@ -182,19 +182,6 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               }}
             >
               123
-            </div>
-            <div
-              className="flex items-center justify-center shrink-0"
-              style={{
-                width: 40,
-                height: 42,
-                borderRadius: 5,
-                backgroundColor: specialBg,
-                boxShadow: "0 1px 0 0 rgba(0,0,0,0.35)",
-                fontSize: 22,
-              }}
-            >
-              😊
             </div>
             <div
               className="flex-1 flex items-center justify-center transition-colors duration-75"

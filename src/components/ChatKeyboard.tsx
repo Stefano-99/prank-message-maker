@@ -172,7 +172,7 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
             <div
               className="flex items-center justify-center shrink-0"
               style={{
-                width: 44,
+                width: 50,
                 height: 42,
                 borderRadius: 5,
                 backgroundColor: specialBg,
@@ -184,8 +184,9 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
               123
             </div>
             <div
-              className="flex-1 flex items-center justify-center transition-colors duration-75"
+              className="flex items-center justify-center transition-colors duration-75"
               style={{
+                flex: "1 1 50%",
                 height: 42,
                 borderRadius: 5,
                 backgroundColor: activeKey === " " ? keyBgPressed : keyBg,
@@ -199,7 +200,7 @@ export default function ChatKeyboard({ currentText, isActive, theme = "whatsapp"
             <div
               className="flex items-center justify-center shrink-0"
               style={{
-                width: 78,
+                width: 88,
                 height: 42,
                 borderRadius: 5,
                 backgroundColor: specialBg,

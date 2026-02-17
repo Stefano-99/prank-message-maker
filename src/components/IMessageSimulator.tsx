@@ -93,7 +93,7 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-[16px] pb-3"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-[16px] pb-3 hide-scrollbar"
         style={{ backgroundColor: "#000000", paddingTop: "100px" }}
       >
         {messages.map((msg, idx) => {
@@ -148,7 +148,7 @@ export default function IMessageSimulator({
       </div>
 
       {/* iOS 17 input bar */}
-      <div className="flex items-center gap-[8px] px-[8px] py-[6px]" style={{ backgroundColor: "#000000" }}>
+      <div className="flex items-center gap-[8px] px-[10px] py-[8px]" style={{ backgroundColor: "#000000" }}>
         {/* Plus / Apps button */}
         <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full" style={{ backgroundColor: "#636366" }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -158,7 +158,7 @@ export default function IMessageSimulator({
 
         {/* Text field + send button container */}
         <div
-          className="flex-1 flex items-center rounded-full min-h-[34px] px-[12px] pr-[3px]"
+          className="flex-1 flex items-center rounded-full min-h-[36px] px-[14px] pr-[3px]"
           style={{ border: "1px solid #3a3a3c" }}
         >
           <div className="flex-1 text-[16px] text-white min-h-[20px]" style={{ fontWeight: 400 }}>

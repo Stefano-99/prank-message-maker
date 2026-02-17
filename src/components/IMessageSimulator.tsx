@@ -29,21 +29,23 @@ export default function IMessageSimulator({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [readState, setReadState] = useState<"none" | "delivered" | "read">("none");
   const lastMeCount = useRef(0);
+  const readTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Track when a new "me" message appears to trigger Delivered → Read
   useEffect(() => {
     const meMessages = messages.filter(m => m.sender === "me");
-    if (meMessages.length > lastMeCount.current && !isTyping) {
+    if (meMessages.length > lastMeCount.current) {
       lastMeCount.current = meMessages.length;
       setReadState("delivered");
-      const timer = setTimeout(() => setReadState("read"), 1200);
-      return () => clearTimeout(timer);
+      if (readTimerRef.current) clearTimeout(readTimerRef.current);
+      readTimerRef.current = setTimeout(() => setReadState("read"), 1200);
     }
     if (meMessages.length === 0) {
       lastMeCount.current = 0;
       setReadState("none");
+      if (readTimerRef.current) clearTimeout(readTimerRef.current);
     }
-  }, [messages, isTyping]);
+  }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

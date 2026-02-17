@@ -14,6 +14,7 @@ const Index = () => {
   const [images, setImages] = useState<Record<string, string>>({});
   const [contactAvatar, setContactAvatar] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [alwaysShowKeyboard, setAlwaysShowKeyboard] = useState(false);
   const [pendingScript, setPendingScript] = useState("");
   const [pendingSpeed, setPendingSpeed] = useState(1);
   const playback = useChatPlayback();
@@ -106,6 +107,7 @@ const Index = () => {
             isTyping={displayState.isTyping}
             typingSender={displayState.typingSender}
             currentTypingText={displayState.currentTypingText}
+            {...(platform === "imessage" ? { alwaysShowKeyboard } : {})}
           />
         </div>
       </div>
@@ -130,6 +132,8 @@ const Index = () => {
         onContactAvatarChange={setContactAvatar}
         images={images}
         onImagesChange={setImages}
+        alwaysShowKeyboard={alwaysShowKeyboard}
+        onAlwaysShowKeyboardChange={setAlwaysShowKeyboard}
       />
 
       <div className="shrink-0" ref={simulatorRef}>
@@ -140,6 +144,7 @@ const Index = () => {
           isTyping={displayState.isTyping}
           typingSender={displayState.typingSender}
           currentTypingText={displayState.currentTypingText}
+          {...(platform === "imessage" ? { alwaysShowKeyboard } : {})}
         />
       </div>
 

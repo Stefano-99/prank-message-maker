@@ -9,6 +9,7 @@ interface Props {
   isTyping: boolean;
   typingSender: "me" | "them";
   currentTypingText: string;
+  alwaysShowKeyboard?: boolean;
 }
 
 function formatTime() {
@@ -23,6 +24,7 @@ export default function IMessageSimulator({
   isTyping,
   typingSender,
   currentTypingText,
+  alwaysShowKeyboard = false,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -126,9 +128,12 @@ export default function IMessageSimulator({
           );
         })}
 
-        {/* Read timestamp */}
+        {/* Delivered + Read timestamps */}
         {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && (
-          <div className="flex justify-end pr-[2px] mt-[2px]">
+          <div className="flex flex-col items-end pr-[2px] mt-[2px] gap-[1px]">
+            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
+              Delivered
+            </span>
             <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
               Read {formatTime()}
             </span>
@@ -194,7 +199,7 @@ export default function IMessageSimulator({
       {/* Interactive keyboard */}
       <ChatKeyboard
         currentText={currentTypingText}
-        isActive={isTyping && typingSender === "me"}
+        isActive={alwaysShowKeyboard || (isTyping && typingSender === "me")}
         theme="ios"
       />
     </div>

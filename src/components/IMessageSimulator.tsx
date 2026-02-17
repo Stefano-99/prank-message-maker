@@ -27,25 +27,32 @@ export default function IMessageSimulator({
   alwaysShowKeyboard = false,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [readState, setReadState] = useState<"none" | "delivered" | "read">("none");
+  const [lastMessageStatus, setLastMessageStatus] = useState<string | null>(null);
   const lastMeCount = useRef(0);
-  const readTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Track when a new "me" message appears to trigger Delivered → Read
+  // Track when a new "me" message appears to show "Delivered"
   useEffect(() => {
     const meMessages = messages.filter(m => m.sender === "me");
     if (meMessages.length > lastMeCount.current) {
       lastMeCount.current = meMessages.length;
-      setReadState("delivered");
-      if (readTimerRef.current) clearTimeout(readTimerRef.current);
-      readTimerRef.current = setTimeout(() => setReadState("read"), 1200);
+      setLastMessageStatus("Delivered");
     }
     if (meMessages.length === 0) {
       lastMeCount.current = 0;
-      setReadState("none");
-      if (readTimerRef.current) clearTimeout(readTimerRef.current);
+      setLastMessageStatus(null);
     }
   }, [messages]);
+
+  // Transition "Delivered" → "Read HH:MM" after 2.5s
+  useEffect(() => {
+    if (lastMessageStatus === "Delivered") {
+      const timer = setTimeout(() => {
+        const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        setLastMessageStatus(`Read ${time}`);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [lastMessageStatus]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -148,10 +155,10 @@ export default function IMessageSimulator({
         })}
 
         {/* Delivered → Read transition */}
-        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && readState !== "none" && (
+        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && lastMessageStatus && (
           <div className="flex justify-end pr-[2px] mt-[2px]">
-            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em] transition-opacity duration-300">
-              {readState === "delivered" ? "Delivered" : `Read ${formatTime()}`}
+            <span style={{ fontSize: '11px', color: '#8e8e93', textAlign: 'right', display: 'block' }}>
+              {lastMessageStatus}
             </span>
           </div>
         )}

@@ -49,7 +49,7 @@ export default function IMessageSimulator({
       const timer = setTimeout(() => {
         const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
         setLastMessageStatus(`Read ${time}`);
-      }, 2500);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [lastMessageStatus]);
@@ -155,7 +155,7 @@ export default function IMessageSimulator({
         })}
 
         {/* Delivered → Read transition */}
-        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && lastMessageStatus && (
+        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && lastMessageStatus && (
           <div className="flex justify-end pr-[2px] mt-[2px]">
             <span style={{ fontSize: '11px', color: '#8e8e93', textAlign: 'right', display: 'block' }}>
               {lastMessageStatus}

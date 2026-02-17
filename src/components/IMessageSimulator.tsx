@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
 import ChatKeyboard from "./ChatKeyboard";
 
@@ -27,6 +27,23 @@ export default function IMessageSimulator({
   alwaysShowKeyboard = false,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [readState, setReadState] = useState<"none" | "delivered" | "read">("none");
+  const lastMeCount = useRef(0);
+
+  // Track when a new "me" message appears to trigger Delivered → Read
+  useEffect(() => {
+    const meMessages = messages.filter(m => m.sender === "me");
+    if (meMessages.length > lastMeCount.current && !isTyping) {
+      lastMeCount.current = meMessages.length;
+      setReadState("delivered");
+      const timer = setTimeout(() => setReadState("read"), 1200);
+      return () => clearTimeout(timer);
+    }
+    if (meMessages.length === 0) {
+      lastMeCount.current = 0;
+      setReadState("none");
+    }
+  }, [messages, isTyping]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -128,14 +145,11 @@ export default function IMessageSimulator({
           );
         })}
 
-        {/* Delivered + Read timestamps */}
-        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && (
-          <div className="flex flex-col items-end pr-[2px] mt-[2px] gap-[1px]">
-            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
-              Delivered
-            </span>
-            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
-              Read {formatTime()}
+        {/* Delivered → Read transition */}
+        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && readState !== "none" && (
+          <div className="flex justify-end pr-[2px] mt-[2px]">
+            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em] transition-opacity duration-300">
+              {readState === "delivered" ? "Delivered" : `Read ${formatTime()}`}
             </span>
           </div>
         )}

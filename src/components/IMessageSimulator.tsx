@@ -93,7 +93,7 @@ export default function IMessageSimulator({
       {/* Chat area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden px-[6px] pb-3"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-[16px] pb-3"
         style={{ backgroundColor: "#000000", paddingTop: "100px" }}
       >
         {messages.map((msg, idx) => {
@@ -113,15 +113,15 @@ export default function IMessageSimulator({
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              <div
-                className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"} ${tailClass}`}
-              >
-                {msg.image ? (
-                  <img src={msg.image} alt="" style={{ borderRadius: "1rem", maxWidth: "100%", width: 220, objectFit: "cover" as const }} />
-                ) : (
-                  msg.text
-                )}
-              </div>
+              {msg.image ? (
+                <img src={msg.image} alt="" style={{ borderRadius: "1.15rem", maxWidth: "75%", width: 220, objectFit: "cover" as const }} />
+              ) : (
+                <div
+                  className={`imsg-bubble ${isMe ? "imsg-me" : "imsg-them"} ${tailClass}`}
+                >
+                  {msg.text}
+                </div>
+              )}
             </div>
           );
         })}
@@ -148,7 +148,7 @@ export default function IMessageSimulator({
       </div>
 
       {/* iOS 17 input bar */}
-      <div className="flex items-center gap-[6px] px-[8px] py-[6px]" style={{ backgroundColor: "#000000" }}>
+      <div className="flex items-center gap-[8px] px-[8px] py-[6px]" style={{ backgroundColor: "#000000" }}>
         {/* Plus / Apps button */}
         <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0 rounded-full" style={{ backgroundColor: "#636366" }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -156,9 +156,9 @@ export default function IMessageSimulator({
           </svg>
         </div>
 
-        {/* Text field */}
+        {/* Text field + send button container */}
         <div
-          className="flex-1 flex items-center rounded-full min-h-[34px] px-[12px]"
+          className="flex-1 flex items-center rounded-full min-h-[34px] px-[12px] pr-[3px]"
           style={{ border: "1px solid #3a3a3c" }}
         >
           <div className="flex-1 text-[16px] text-white min-h-[20px]" style={{ fontWeight: 400 }}>
@@ -171,23 +171,23 @@ export default function IMessageSimulator({
               <span style={{ color: "#8e8e93" }}>iMessage</span>
             )}
           </div>
-        </div>
 
-        {/* Send / Voice memo button */}
-        <div className="w-[30px] h-[30px] flex items-center justify-center shrink-0">
-          {isTyping && typingSender === "me" ? (
-            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ backgroundColor: "#0b84fe" }}>
-              <svg width="13" height="15" viewBox="0 0 13 15" fill="none">
-                <path d="M6.5 13V2M6.5 2L1.5 7M6.5 2L11.5 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* Send / Voice memo button - inside input */}
+          <div className="w-[28px] h-[28px] flex items-center justify-center shrink-0">
+            {isTyping && typingSender === "me" ? (
+              <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center" style={{ backgroundColor: "#0b84fe" }}>
+                <svg width="13" height="15" viewBox="0 0 13 15" fill="none">
+                  <path d="M6.5 13V2M6.5 2L1.5 7M6.5 2L11.5 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M12 19V22" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="9" y="3" width="6" height="12" rx="3" stroke="#8e8e93" strokeWidth="1.5"/>
               </svg>
-            </div>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M19 10V12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12V10" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M12 19V22" stroke="#8e8e93" strokeWidth="1.5" strokeLinecap="round"/>
-              <rect x="9" y="3" width="6" height="12" rx="3" stroke="#8e8e93" strokeWidth="1.5"/>
-            </svg>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

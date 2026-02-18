@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize, UserCircle, Keyboard } from "lucide-react";
+import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize, UserCircle } from "lucide-react";
 
 interface Props {
   onPlay: (script: string, speed: number) => void;
@@ -17,8 +17,6 @@ interface Props {
   onContactAvatarChange: (avatar: string | null) => void;
   images: Record<string, string>;
   onImagesChange: (images: Record<string, string>) => void;
-  alwaysShowKeyboard: boolean;
-  onAlwaysShowKeyboardChange: (v: boolean) => void;
 }
 
 const EXAMPLE_SCRIPT = `Nome: João
@@ -48,8 +46,6 @@ export default function ScriptEditor({
   onContactAvatarChange,
   images,
   onImagesChange,
-  alwaysShowKeyboard,
-  onAlwaysShowKeyboardChange,
 }: Props) {
   const [script, setScript] = useState(EXAMPLE_SCRIPT);
   const [speed, setSpeed] = useState(1);
@@ -257,22 +253,6 @@ export default function ScriptEditor({
           <span>3x</span>
         </div>
       </div>
-
-      {/* Always show keyboard toggle */}
-      <label className="flex items-center gap-2 cursor-pointer select-none">
-        <div
-          onClick={() => onAlwaysShowKeyboardChange(!alwaysShowKeyboard)}
-          className={`relative w-[42px] h-[26px] rounded-full transition-colors duration-200 ${alwaysShowKeyboard ? "bg-[#0a84ff]" : "bg-muted"}`}
-        >
-          <div
-            className={`absolute top-[3px] w-[20px] h-[20px] rounded-full bg-white shadow transition-transform duration-200 ${alwaysShowKeyboard ? "translate-x-[19px]" : "translate-x-[3px]"}`}
-          />
-        </div>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Keyboard className="w-3.5 h-3.5" />
-          Teclado sempre visível
-        </span>
-      </label>
 
       {/* Action buttons */}
       <div className="flex gap-2">

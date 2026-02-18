@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
 import ChatKeyboard from "./ChatKeyboard";
 
@@ -9,7 +9,6 @@ interface Props {
   isTyping: boolean;
   typingSender: "me" | "them";
   currentTypingText: string;
-  alwaysShowKeyboard?: boolean;
 }
 
 function formatTime() {
@@ -24,35 +23,8 @@ export default function IMessageSimulator({
   isTyping,
   typingSender,
   currentTypingText,
-  alwaysShowKeyboard = false,
 }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [lastMessageStatus, setLastMessageStatus] = useState<string | null>(null);
-  const lastMeCount = useRef(0);
-
-  // Track when a new "me" message appears to show "Delivered"
-  useEffect(() => {
-    const meMessages = messages.filter(m => m.sender === "me");
-    if (meMessages.length > lastMeCount.current) {
-      lastMeCount.current = meMessages.length;
-      setLastMessageStatus("Delivered");
-    }
-    if (meMessages.length === 0) {
-      lastMeCount.current = 0;
-      setLastMessageStatus(null);
-    }
-  }, [messages]);
-
-  // Transition "Delivered" → "Read HH:MM" after 2.5s
-  useEffect(() => {
-    if (lastMessageStatus === "Delivered") {
-      const timer = setTimeout(() => {
-        const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        setLastMessageStatus(`Read ${time}`);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [lastMessageStatus]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -154,11 +126,11 @@ export default function IMessageSimulator({
           );
         })}
 
-        {/* Delivered → Read transition */}
-        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && lastMessageStatus && (
+        {/* Read timestamp */}
+        {messages.length > 0 && messages[messages.length - 1]?.sender === "me" && !isTyping && (
           <div className="flex justify-end pr-[2px] mt-[2px]">
-            <span style={{ fontSize: '11px', color: '#8e8e93', textAlign: 'right', display: 'block' }}>
-              {lastMessageStatus}
+            <span className="text-[11px] text-[#8e8e93] font-normal tracking-[-0.01em]">
+              Read {formatTime()}
             </span>
           </div>
         )}
@@ -222,7 +194,7 @@ export default function IMessageSimulator({
       {/* Interactive keyboard */}
       <ChatKeyboard
         currentText={currentTypingText}
-        isActive={alwaysShowKeyboard || (isTyping && typingSender === "me")}
+        isActive={isTyping && typingSender === "me"}
         theme="ios"
       />
     </div>

@@ -92,7 +92,7 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
         <button
           onClick={handlePlayPause}
           className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0 cursor-pointer"
-          style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+          style={{ backgroundColor: isMe ? "rgba(255,255,255,0.15)" : "#0A84FF" }}
         >
           {activePlaying ? (
             <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
@@ -122,9 +122,9 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
                 style={{
                   width: 2.5,
                   height: heightPx,
-                  backgroundColor: played
-                    ? "rgba(255,255,255,0.95)"
-                    : "rgba(255,255,255,0.35)",
+                  backgroundColor: isMe
+                    ? (played ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)")
+                    : (played ? "#8E8E93" : "rgba(255,255,255,0.3)"),
                 }}
               />
             );

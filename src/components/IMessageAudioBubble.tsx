@@ -1,21 +1,65 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 interface Props {
   isMe: boolean;
   durationSec: number;
-  isPlaying?: boolean; // whether this audio is currently "playing" animation
+  audioUrl?: string;
+  isAnimPlaying?: boolean;
   playProgress?: number; // 0-1
   tailClass: string;
 }
 
-export default function IMessageAudioBubble({ isMe, durationSec, isPlaying, playProgress = 0, tailClass }: Props) {
+export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAnimPlaying, playProgress = 0, tailClass }: Props) {
+  const [manualPlaying, setManualPlaying] = useState(false);
+  const [manualProgress, setManualProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const rafRef = useRef<number>(0);
+
   const formatDuration = (sec: number) => {
     const m = Math.floor(sec / 60);
     const s = Math.floor(sec % 60);
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  const remaining = Math.max(0, durationSec - durationSec * playProgress);
+  const handlePlayPause = useCallback(() => {
+    if (!audioUrl) return;
+
+    if (manualPlaying && audioRef.current) {
+      audioRef.current.pause();
+      cancelAnimationFrame(rafRef.current);
+      setManualPlaying(false);
+      return;
+    }
+
+    const audio = audioRef.current || new Audio();
+    audio.src = audioUrl;
+    audioRef.current = audio;
+
+    const updateProgress = () => {
+      if (audio.duration) {
+        setManualProgress(audio.currentTime / audio.duration);
+      }
+      if (!audio.paused && !audio.ended) {
+        rafRef.current = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    audio.onended = () => {
+      setManualPlaying(false);
+      setManualProgress(0);
+      cancelAnimationFrame(rafRef.current);
+    };
+
+    audio.play().then(() => {
+      setManualPlaying(true);
+      rafRef.current = requestAnimationFrame(updateProgress);
+    }).catch(() => {});
+  }, [audioUrl, manualPlaying]);
+
+  // Use manual playback state if user clicked play, otherwise use animation state
+  const activeProgress = manualPlaying ? manualProgress : playProgress;
+  const activePlaying = manualPlaying || isAnimPlaying;
+  const remaining = Math.max(0, durationSec - durationSec * activeProgress);
   const barCount = 30;
 
   return (
@@ -25,8 +69,12 @@ export default function IMessageAudioBubble({ isMe, durationSec, isPlaying, play
     >
       <div className="flex items-center gap-[8px]">
         {/* Play/Pause button */}
-        <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
-          {isPlaying ? (
+        <button
+          onClick={handlePlayPause}
+          className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0 cursor-pointer"
+          style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+        >
+          {activePlaying ? (
             <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
               <rect x="1" y="1" width="3.5" height="12" rx="1" fill="white" />
               <rect x="7.5" y="1" width="3.5" height="12" rx="1" fill="white" />
@@ -36,7 +84,7 @@ export default function IMessageAudioBubble({ isMe, durationSec, isPlaying, play
               <path d="M2 1.5V12.5L11 7L2 1.5Z" fill="white" />
             </svg>
           )}
-        </div>
+        </button>
 
         {/* Waveform */}
         <div className="flex-1 flex items-center gap-[1.5px] h-[28px]">
@@ -44,9 +92,8 @@ export default function IMessageAudioBubble({ isMe, durationSec, isPlaying, play
             const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
             const normalHeight = 0.2 + (seed - Math.floor(seed)) * 0.8;
             const heightPx = 4 + normalHeight * 20;
-
             const barPosition = i / barCount;
-            const played = barPosition <= playProgress;
+            const played = barPosition <= activeProgress;
 
             return (
               <div
@@ -66,7 +113,7 @@ export default function IMessageAudioBubble({ isMe, durationSec, isPlaying, play
 
         {/* Duration */}
         <span className="text-[11px] text-white/70 font-normal tabular-nums shrink-0 min-w-[28px] text-right">
-          {isPlaying ? formatDuration(remaining) : formatDuration(durationSec)}
+          {activePlaying ? formatDuration(remaining) : formatDuration(durationSec)}
         </span>
       </div>
     </div>

@@ -118,7 +118,8 @@ export default function IMessageSimulator({
                 <IMessageAudioBubble
                   isMe={isMe}
                   durationSec={msg.audio.durationSec}
-                  isPlaying={(msg.audioPlayProgress ?? 0) > 0 && (msg.audioPlayProgress ?? 0) < 1}
+                  audioUrl={msg.audio.url}
+                  isAnimPlaying={(msg.audioPlayProgress ?? 0) > 0 && (msg.audioPlayProgress ?? 0) < 1}
                   playProgress={msg.audioPlayProgress ?? 0}
                   tailClass={tailClass}
                 />

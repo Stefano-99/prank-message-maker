@@ -31,12 +31,26 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
       return;
     }
 
-    const audio = audioRef.current || new Audio();
-    audio.src = audioUrl;
-    audioRef.current = audio;
+    // Create or reuse audio element synchronously in user gesture
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.preload = "auto";
+    }
+    const audio = audioRef.current;
+    
+    // Only set src if changed
+    if (audio.src !== audioUrl) {
+      audio.src = audioUrl;
+      audio.load();
+    }
+
+    // Reset to beginning if ended
+    if (audio.ended || audio.currentTime > 0) {
+      audio.currentTime = 0;
+    }
 
     const updateProgress = () => {
-      if (audio.duration) {
+      if (audio.duration && isFinite(audio.duration)) {
         setManualProgress(audio.currentTime / audio.duration);
       }
       if (!audio.paused && !audio.ended) {
@@ -50,10 +64,16 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
       cancelAnimationFrame(rafRef.current);
     };
 
-    audio.play().then(() => {
-      setManualPlaying(true);
-      rafRef.current = requestAnimationFrame(updateProgress);
-    }).catch(() => {});
+    // Play immediately in user gesture context
+    const playPromise = audio.play();
+    if (playPromise) {
+      playPromise.then(() => {
+        setManualPlaying(true);
+        rafRef.current = requestAnimationFrame(updateProgress);
+      }).catch((err) => {
+        console.error("Audio play failed:", err);
+      });
+    }
   }, [audioUrl, manualPlaying]);
 
   // Use manual playback state if user clicked play, otherwise use animation state

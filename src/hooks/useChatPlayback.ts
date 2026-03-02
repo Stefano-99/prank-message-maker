@@ -5,6 +5,8 @@ export interface ChatMessage {
   sender: "me" | "them";
   text: string;
   image?: string; // URL da imagem
+  audio?: { url: string; durationSec: number }; // Audio message
+  audioPlayProgress?: number; // 0-1, used during playback animation
 }
 
 export interface ParsedScript {
@@ -12,11 +14,14 @@ export interface ParsedScript {
   messages: ChatMessage[];
 }
 
-export function parseScript(script: string, images?: Record<string, string>): ParsedScript {
+export function parseScript(
+  script: string,
+  images?: Record<string, string>,
+  audios?: Record<string, { url: string; durationSec: number }>
+): ParsedScript {
   const lines = script.trim().split("\n").filter((l) => l.trim());
   if (lines.length === 0) return { contact: "Contato", messages: [] };
 
-  // First line can be contact name: "Nome: João"
   let contact = "Contato";
   let startIdx = 0;
 
@@ -51,6 +56,12 @@ export function parseScript(script: string, images?: Record<string, string>): Pa
     }
 
     if (text) {
+      // Check if text is an audio reference
+      const audioRef = audios?.[text.toLowerCase()];
+      if (audioRef) {
+        messages.push({ id: id++, sender, text: "", audio: audioRef });
+        continue;
+      }
       // Check if text is an image reference
       const imageUrl = images?.[text.toLowerCase()];
       if (imageUrl && sender === "me") {
@@ -97,16 +108,38 @@ export function useChatPlayback() {
       const msg = messages[i];
       
       if (msg.image) {
-        // For image messages, just show a brief pause then send
         await new Promise((r) => setTimeout(r, 400 / speed));
         setVisibleMessages((prev) => [...prev, msg]);
+      } else if (msg.audio) {
+        // Show the audio bubble, then animate playback progress
+        const audioMsg = { ...msg, audioPlayProgress: 0 };
+        setVisibleMessages((prev) => [...prev, audioMsg]);
+        
+        // Brief pause before "playing"
+        await new Promise((r) => setTimeout(r, 300 / speed));
+        
+        // Animate audio playback over the duration
+        const audioDurationMs = msg.audio.durationSec * 1000 / speed;
+        const stepMs = 50;
+        const steps = Math.ceil(audioDurationMs / stepMs);
+        
+        for (let s = 0; s <= steps; s++) {
+          if (cancelRef.current) break;
+          const progress = Math.min(s / steps, 1);
+          setVisibleMessages((prev) => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            updated[lastIdx] = { ...updated[lastIdx], audioPlayProgress: progress };
+            return updated;
+          });
+          await new Promise((r) => setTimeout(r, stepMs));
+        }
       } else {
         setTypingSender(msg.sender);
         setIsTyping(true);
         setCurrentTypingText("");
         setTypingProgress(0);
 
-        // Simulate typing character by character
         for (let c = 0; c <= msg.text.length; c++) {
           if (cancelRef.current) break;
           setCurrentTypingText(msg.text.substring(0, c));
@@ -116,7 +149,6 @@ export function useChatPlayback() {
 
         if (cancelRef.current) break;
 
-        // Small pause before sending
         await new Promise((r) => setTimeout(r, 200 / speed));
 
         setIsTyping(false);
@@ -124,8 +156,6 @@ export function useChatPlayback() {
         setVisibleMessages((prev) => [...prev, msg]);
       }
 
-
-      // Pause between messages
       if (i < messages.length - 1) {
         await new Promise((r) => setTimeout(r, pauseBetween));
       }

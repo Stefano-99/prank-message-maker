@@ -111,12 +111,16 @@ export function useChatPlayback() {
         await new Promise((r) => setTimeout(r, 400 / speed));
         setVisibleMessages((prev) => [...prev, msg]);
       } else if (msg.audio) {
-        // Show the audio bubble, then animate playback progress
+        // Show the audio bubble
         const audioMsg = { ...msg, audioPlayProgress: 0 };
         setVisibleMessages((prev) => [...prev, audioMsg]);
         
-        // Brief pause before "playing"
         await new Promise((r) => setTimeout(r, 300 / speed));
+        
+        // Play actual audio
+        const audioEl = new Audio(msg.audio.url);
+        audioEl.playbackRate = speed;
+        audioEl.play().catch((err) => console.error("Auto audio play failed:", err));
         
         // Animate audio playback over the duration
         const audioDurationMs = msg.audio.durationSec * 1000 / speed;
@@ -124,7 +128,10 @@ export function useChatPlayback() {
         const steps = Math.ceil(audioDurationMs / stepMs);
         
         for (let s = 0; s <= steps; s++) {
-          if (cancelRef.current) break;
+          if (cancelRef.current) {
+            audioEl.pause();
+            break;
+          }
           const progress = Math.min(s / steps, 1);
           setVisibleMessages((prev) => {
             const updated = [...prev];
@@ -134,6 +141,8 @@ export function useChatPlayback() {
           });
           await new Promise((r) => setTimeout(r, stepMs));
         }
+        
+        audioEl.pause();
       } else {
         setTypingSender(msg.sender);
         setIsTyping(true);

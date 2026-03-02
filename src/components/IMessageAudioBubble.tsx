@@ -120,7 +120,7 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
                 key={i}
                 className="rounded-full transition-all duration-100"
                 style={{
-                  width: 2.5,
+                  width: 3,
                   height: heightPx,
                   backgroundColor: played
                     ? "rgba(255,255,255,0.95)"

@@ -122,9 +122,9 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
                 style={{
                   width: 2.2,
                   height: heightPx,
-                  backgroundColor: played
-                    ? "rgba(255,255,255,0.95)"
-                    : "rgba(255,255,255,0.35)",
+                  backgroundColor: isMe
+                    ? (played ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)")
+                    : (played ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.95)"),
                 }}
               />
             );

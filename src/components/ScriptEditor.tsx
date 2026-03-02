@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize, UserCircle } from "lucide-react";
+import { Play, RotateCcw, Zap, ImagePlus, X, Video, Maximize, UserCircle, Music } from "lucide-react";
 
 interface Props {
   onPlay: (script: string, speed: number) => void;
@@ -17,6 +17,8 @@ interface Props {
   onContactAvatarChange: (avatar: string | null) => void;
   images: Record<string, string>;
   onImagesChange: (images: Record<string, string>) => void;
+  audios: Record<string, { url: string; durationSec: number }>;
+  onAudiosChange: (audios: Record<string, { url: string; durationSec: number }>) => void;
 }
 
 const EXAMPLE_SCRIPT = `Nome: João
@@ -46,12 +48,16 @@ export default function ScriptEditor({
   onContactAvatarChange,
   images,
   onImagesChange,
+  audios,
+  onAudiosChange,
 }: Props) {
   const [script, setScript] = useState(EXAMPLE_SCRIPT);
   const [speed, setSpeed] = useState(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const imageCounter = useRef(Object.keys(images).length + 1);
+  const audioCounter = useRef(Object.keys(audios).length + 1);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -64,6 +70,29 @@ export default function ScriptEditor({
     });
     onImagesChange(newImages);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      const name = `audio${audioCounter.current++}`;
+      const url = URL.createObjectURL(file);
+      // Get audio duration
+      const audio = new Audio(url);
+      audio.addEventListener("loadedmetadata", () => {
+        const durationSec = Math.round(audio.duration);
+        onAudiosChange({ ...audios, [name]: { url, durationSec } });
+      });
+    });
+    if (audioInputRef.current) audioInputRef.current.value = "";
+  };
+
+  const removeAudio = (name: string) => {
+    const newAudios = { ...audios };
+    URL.revokeObjectURL(newAudios[name].url);
+    delete newAudios[name];
+    onAudiosChange(newAudios);
   };
 
   const removeImage = (name: string) => {
@@ -188,7 +217,8 @@ export default function ScriptEditor({
           Use <code className="bg-muted-foreground/20 px-1 rounded">eu:</code> e{" "}
           <code className="bg-muted-foreground/20 px-1 rounded">ele:</code> ou{" "}
           <code className="bg-muted-foreground/20 px-1 rounded">ela:</code> para cada mensagem.
-          Para enviar uma imagem: <code className="bg-muted-foreground/20 px-1 rounded">eu: foto1</code>
+          Para enviar uma imagem: <code className="bg-muted-foreground/20 px-1 rounded">eu: foto1</code>.
+          Para enviar um áudio: <code className="bg-muted-foreground/20 px-1 rounded">eu: audio1</code>
         </p>
       </div>
 
@@ -233,7 +263,48 @@ export default function ScriptEditor({
         )}
       </div>
 
-      {/* Speed control */}
+      {/* Audio uploads */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-1 block">
+          Áudios
+        </label>
+        <input
+          ref={audioInputRef}
+          type="file"
+          accept="audio/*"
+          multiple
+          onChange={handleAudioUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => audioInputRef.current?.click()}
+          className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-2 rounded-lg text-sm hover:text-foreground transition-colors mb-2"
+        >
+          <Music className="w-4 h-4" />
+          Adicionar áudio
+        </button>
+        {Object.keys(audios).length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(audios).map(([name, info]) => (
+              <div key={name} className="relative group bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
+                <Music className="w-4 h-4 text-muted-foreground" />
+                <div>
+                  <span className="text-xs text-foreground font-medium">{name}</span>
+                  <span className="text-[10px] text-muted-foreground ml-1">{info.durationSec}s</span>
+                </div>
+                <button
+                  onClick={() => removeAudio(name)}
+                  className="w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div>
         <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
           <Zap className="w-3 h-3" />

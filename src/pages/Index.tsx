@@ -12,6 +12,7 @@ const Index = () => {
   const [platform, setPlatform] = useState<"whatsapp" | "instagram" | "imessage">("whatsapp");
   const [contactName, setContactName] = useState("João");
   const [images, setImages] = useState<Record<string, string>>({});
+  const [audios, setAudios] = useState<Record<string, { url: string; durationSec: number }>>({});
   const [contactAvatar, setContactAvatar] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
   const [pendingScript, setPendingScript] = useState("");
@@ -22,39 +23,39 @@ const Index = () => {
 
   const handlePlay = useCallback(
     (script: string, speed: number) => {
-      const parsed = parseScript(script, images);
+      const parsed = parseScript(script, images, audios);
       if (parsed.contact !== "Contato") setContactName(parsed.contact);
       playback.play(parsed.messages, speed);
     },
-    [playback, images]
+    [playback, images, audios]
   );
 
   const handleExport = useCallback(
     (script: string, speed: number) => {
       if (!simulatorRef.current) return;
-      const parsed = parseScript(script, images);
+      const parsed = parseScript(script, images, audios);
       if (parsed.contact !== "Contato") setContactName(parsed.contact);
       playback.reset();
       recorder.startExport(simulatorRef.current, parsed.messages, speed);
     },
-    [playback, recorder, images]
+    [playback, recorder, images, audios]
   );
 
   const handleStartPreview = useCallback(
     (script: string, speed: number) => {
-      const parsed = parseScript(script, images);
+      const parsed = parseScript(script, images, audios);
       if (parsed.contact !== "Contato") setContactName(parsed.contact);
       setPendingScript(script);
       setPendingSpeed(speed);
       playback.reset();
       setPreviewMode(true);
     },
-    [playback, images]
+    [playback, images, audios]
   );
 
   useEffect(() => {
     if (previewMode && pendingScript) {
-      const parsed = parseScript(pendingScript, images);
+      const parsed = parseScript(pendingScript, images, audios);
       const timer = setTimeout(() => {
         playback.play(parsed.messages, pendingSpeed);
       }, 400);
@@ -130,6 +131,8 @@ const Index = () => {
         onContactAvatarChange={setContactAvatar}
         images={images}
         onImagesChange={setImages}
+        audios={audios}
+        onAudiosChange={setAudios}
       />
 
       <div className="shrink-0" ref={simulatorRef}>

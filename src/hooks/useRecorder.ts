@@ -28,9 +28,12 @@ function computeTotalDuration(messages: ChatMessage[], speed: number): number {
     const msg = messages[i];
     if (msg.image) {
       t += imagePause;
+    } else if (msg.audio) {
+      t += 300 / speed; // initial pause
+      t += msg.audio.durationSec * 1000 / speed; // playback duration
     } else {
-      t += charDelay * msg.text.length; // typing
-      t += sendPause; // pause before send
+      t += charDelay * msg.text.length;
+      t += sendPause;
     }
     if (i < messages.length - 1) t += pauseBetween;
   }
@@ -60,6 +63,24 @@ function computeStateAtTime(
       }
       t = endTime;
       visible.push(msg);
+    } else if (msg.audio) {
+      const initPause = 300 / speed;
+      const audioDur = msg.audio.durationSec * 1000 / speed;
+      
+      if (timeMs < t + initPause) {
+        // Audio bubble appears but not playing yet
+        visible.push({ ...msg, audioPlayProgress: 0 });
+        return { visibleMessages: [...visible], isTyping: false, typingSender: "me", currentTypingText: "" };
+      }
+      t += initPause;
+      
+      if (timeMs < t + audioDur) {
+        const progress = (timeMs - t) / audioDur;
+        visible.push({ ...msg, audioPlayProgress: progress });
+        return { visibleMessages: [...visible], isTyping: false, typingSender: "me", currentTypingText: "" };
+      }
+      t += audioDur;
+      visible.push({ ...msg, audioPlayProgress: 1 });
     } else {
       const typingEnd = t + charDelay * msg.text.length;
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { ChatMessage } from "@/hooks/useChatPlayback";
 import ChatKeyboard from "./ChatKeyboard";
+import IMessageAudioBubble from "./IMessageAudioBubble";
 
 interface Props {
   contactName: string;
@@ -113,7 +114,15 @@ export default function IMessageSimulator({
               key={msg.id}
               className={`flex ${isMe ? "justify-end" : "justify-start"} ${marginTop} animate-message-in`}
             >
-              {msg.image ? (
+              {msg.audio ? (
+                <IMessageAudioBubble
+                  isMe={isMe}
+                  durationSec={msg.audio.durationSec}
+                  isPlaying={(msg.audioPlayProgress ?? 0) > 0 && (msg.audioPlayProgress ?? 0) < 1}
+                  playProgress={msg.audioPlayProgress ?? 0}
+                  tailClass={tailClass}
+                />
+              ) : msg.image ? (
                 <img src={msg.image} alt="" style={{ borderRadius: "1.15rem", maxWidth: "75%", width: 220, objectFit: "cover" as const }} />
               ) : (
                 <div

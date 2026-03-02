@@ -80,7 +80,7 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
   const activeProgress = manualPlaying ? manualProgress : playProgress;
   const activePlaying = manualPlaying || isAnimPlaying;
   const remaining = Math.max(0, durationSec - durationSec * activeProgress);
-  const barCount = 30;
+  const barCount = isMe ? 30 : 50;
 
   return (
     <div
@@ -107,20 +107,21 @@ export default function IMessageAudioBubble({ isMe, durationSec, audioUrl, isAni
         </button>
 
         {/* Waveform */}
-        <div className="flex-1 flex items-center gap-[1.5px] h-[28px]">
+        <div className="flex-1 flex items-center gap-[1px] h-[28px]">
           {Array.from({ length: barCount }).map((_, i) => {
             const seed = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
             const normalHeight = 0.2 + (seed - Math.floor(seed)) * 0.8;
-            const heightPx = 4 + normalHeight * 20;
+            const heightPx = isMe ? (4 + normalHeight * 20) : (3 + normalHeight * 18);
             const barPosition = i / barCount;
             const played = barPosition <= activeProgress;
+            const barWidth = isMe ? 2.5 : 1.8;
 
             return (
               <div
                 key={i}
                 className="rounded-full transition-all duration-100"
                 style={{
-                  width: 2.5,
+                  width: barWidth,
                   height: heightPx,
                   backgroundColor: isMe
                     ? (played ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)")
